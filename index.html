@@ -337,11 +337,17 @@ function parseReport(text){
   if(head.some(h=>h.includes("названия строк")||h.includes("сумма по полю")))
     return{rows:[],head,err:`похоже на пивот-таблицу, нужен лист с сырыми данными. Заголовки: ${head.join(" | ")}`};
   const col=preds=>head.findIndex(h=>preds.some(p=>h.includes(p)));
-  const cD=col(["дата заказа","дата продаж","дата отправ","date_sale","дата","date"]);
+  // colP: priority by predicate order (not by column position)
+  const colP=preds=>{for(const p of preds){const i=head.findIndex(h=>h.includes(p));if(i>=0)return i;}return-1;};
+  const cD=col(["день","дата заказа","дата продаж","дата отправ","date_sale","дата","date"]);
   const cA=col(["артикул поставщика","артикул продавца","sa_name","supplierarticle","артикул","article"]);
-  const cP=col(["вайлдберриз реализ","к перечислению","цена со скид","retail_amount","розничная","retail","ppvz","сумма","цена","price","amount"]);
-  const cQ=col(["кол-во","количество","qty","quantity"]);
+  // price: prefer "сумма заказ" (gross order value) over "к перечислению" (net)
+  const cP=colP(["сумма заказ","сумма зак","вайлдберриз реализ","к перечислению","цена со скид","retail_amount","розничная","retail","ppvz","сумма","цена","price","amount"]);
+  // qty: prefer "заказ" (orders) over "выкупил" (buybacks) — we multiply by buyout rate separately
+  let cQ=head.findIndex(h=>h.includes("заказ")&&!h.includes("сумма"));
+  if(cQ<0)cQ=colP(["выкупил","кол-во","количество","qty","quantity"]);
   if(cD<0||cA<0)return{rows:[],head,err:`не нашёл колонки даты или артикула. Заголовки: ${head.slice(0,15).join(" | ")}`};
+  const colInfo=`дата[${cD}]=${head[cD]||"?"}, арт[${cA}]=${head[cA]||"?"}, цена[${cP}]=${head[cP]||"?"}, кол-во[${cQ}]=${head[cQ]||"нет"}`;
   const out=[];let skippedDates=0;
   for(let i=1;i<rows.length;i++){const r=rows[i];if(!r)continue;
     const date=parseDate(r[cD]);if(!date){skippedDates++;continue;}
@@ -350,8 +356,8 @@ function parseReport(text){
     const rev=cP>=0?(parseNum(r[cP])||0):0;
     for(let q=0;q<Math.max(1,Math.round(qty));q++) out.push({date,art,rev:rev/Math.max(1,qty)});}
   if(out.length===0&&skippedDates>10)
-    return{rows:out,head,err:`${skippedDates} строк не распарсили дату. Пример: "${norm(rows[1]?.[cD]||"")}". Заголовки: ${head.slice(0,10).join(" | ")}`};
-  return{rows:out,head};
+    return{rows:out,head,err:`${skippedDates} строк не распарсили дату. Пример: "${norm(rows[1]?.[cD]||"")}". Заголовки: ${head.slice(0,10).join(" | ")}`,colInfo};
+  return{rows:out,head,colInfo};
 }
 
 async function fetchOrders(fromISO,token){
@@ -454,17 +460,19 @@ async function runPipeline(){
     }catch(e){addLog("Отчёт №2: "+e.message,"warn");}
   }
 
-  // merge: for each date take source with MORE orders (complete > stale)
+  // merge: API covers last 60 days, report covers everything older
   const dayMap=new Map();
+  const apiCutoff=addDays(todayISO(),-60);
   const allDates=new Set([...apiDayMap.keys(),...repDayMap.keys()]);
   let usedApi=0,usedRep=0;
   for(const date of allDates){
     const a=apiDayMap.get(date)||[];
     const r=repDayMap.get(date)||[];
-    if(a.length>=r.length){dayMap.set(date,a);usedApi++;}
-    else{dayMap.set(date,r);usedRep++;}
+    if(date>=apiCutoff&&a.length>0){dayMap.set(date,a);usedApi++;}
+    else if(r.length>0){dayMap.set(date,r);usedRep++;}
+    else if(a.length>0){dayMap.set(date,a);usedApi++;}
   }
-  addLog(`Мердж: ${allDates.size} дней (${usedApi} API, ${usedRep} отчёт)`,"now");
+  addLog(`Мердж: ${allDates.size} дней (${usedApi} API, ${usedRep} отчёт, граница ${fmtDate(apiCutoff)})`,"now");
 
   // collect all unique arts for nomatch debugging
   const allArts=new Set();
