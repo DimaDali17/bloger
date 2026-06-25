@@ -331,18 +331,26 @@ function parseCost(text){
 }
 
 function parseReport(text){
-  const rows=tableRows(text,detectDelim(text));if(rows.length<2)return{rows:[],head:[],err:"пустой"};
+  const rows=tableRows(text,detectDelim(text));if(rows.length<2)return{rows:[],head:[],err:"пустой файл"};
   const head=rows[0].map(h=>h.toLowerCase().trim());
+  // pivot table detection
+  if(head.some(h=>h.includes("названия строк")||h.includes("сумма по полю")))
+    return{rows:[],head,err:`похоже на пивот-таблицу, нужен лист с сырыми данными. Заголовки: ${head.join(" | ")}`};
   const col=preds=>head.findIndex(h=>preds.some(p=>h.includes(p)));
-  const cD=col(["дата заказа","дата продаж","дата","date"]);
-  const cA=col(["артикул поставщика","артикул продавца","supplierarticle","артикул","article"]);
-  const cP=col(["вайлдберриз реализ","цена со скид","к перечислению","финальная цена","розничная","сумма","цена","price","amount"]);
-  if(cD<0||cA<0)return{rows:[],head,err:`не нашёл колонки даты (col ${cD}) или артикула (col ${cA}). Заголовки: ${head.slice(0,12).join(" | ")}`};
-  const out=[];
+  const cD=col(["дата заказа","дата продаж","дата отправ","date_sale","дата","date"]);
+  const cA=col(["артикул поставщика","артикул продавца","sa_name","supplierarticle","артикул","article"]);
+  const cP=col(["вайлдберриз реализ","к перечислению","цена со скид","retail_amount","розничная","retail","ppvz","сумма","цена","price","amount"]);
+  const cQ=col(["кол-во","количество","qty","quantity"]);
+  if(cD<0||cA<0)return{rows:[],head,err:`не нашёл колонки даты или артикула. Заголовки: ${head.slice(0,15).join(" | ")}`};
+  const out=[];let skippedDates=0;
   for(let i=1;i<rows.length;i++){const r=rows[i];if(!r)continue;
-    const date=parseDate(r[cD]);if(!date)continue;
+    const date=parseDate(r[cD]);if(!date){skippedDates++;continue;}
     const art=norm(r[cA]);if(!art)continue;
-    out.push({date,art,rev:cP>=0?(parseNum(r[cP])||0):0});}
+    const qty=cQ>=0?(parseNum(r[cQ])||1):1;
+    const rev=cP>=0?(parseNum(r[cP])||0):0;
+    for(let q=0;q<Math.max(1,Math.round(qty));q++) out.push({date,art,rev:rev/Math.max(1,qty)});}
+  if(out.length===0&&skippedDates>10)
+    return{rows:out,head,err:`${skippedDates} строк не распарсили дату. Пример: "${norm(rows[1]?.[cD]||"")}". Заголовки: ${head.slice(0,10).join(" | ")}`};
   return{rows:out,head};
 }
 
@@ -376,7 +384,7 @@ async function runPipeline(){
   const today=todayISO();
   const globalTo=(addDays(maxD,state.effDays)<today?addDays(maxD,state.effDays):today);
 
-  const dayMap=new Map();
+  const apiDayMap=new Map();
   let apiMin=null,apiMax=null,apiTotal=0;
   const cabinets=[
     {name:"EF",token:state.tokenEF},
@@ -391,8 +399,8 @@ async function runPipeline(){
       for(const o of orders){
         const date=dateOnly(o.date);if(date<globalFrom||date>globalTo)continue;
         const rev=(parseFloat(o[state.priceField])||parseFloat(o.finishedPrice)||parseFloat(o.priceWithDisc)||parseFloat(o.totalPrice)||0);
-        if(!dayMap.has(date))dayMap.set(date,[]);
-        dayMap.get(date).push({art:o.supplierArticle||"",rev,cab:cab.name});
+        if(!apiDayMap.has(date))apiDayMap.set(date,[]);
+        apiDayMap.get(date).push({art:o.supplierArticle||"",rev});
         if(apiMin===null||date<apiMin)apiMin=date;if(apiMax===null||date>apiMax)apiMax=date;
         added++;
       }
@@ -402,6 +410,7 @@ async function runPipeline(){
   }
 
   stepNow(3);
+  const repDayMap=new Map();
   let histAdded=0,reportRows=0;
   if(state.report.trim()){
     try{
@@ -411,14 +420,25 @@ async function runPipeline(){
       else addLog(`Отчёт №2: ${reportRows} строк прочитано`,"now");
       for(const o of rep.rows){
         if(o.date<globalFrom||o.date>globalTo)continue;
-        if(apiMin&&o.date>=apiMin)continue;
-        if(!dayMap.has(o.date))dayMap.set(o.date,[]);
-        dayMap.get(o.date).push({art:o.art,rev:o.rev,cab:"отчёт"});
+        if(!repDayMap.has(o.date))repDayMap.set(o.date,[]);
+        repDayMap.get(o.date).push({art:o.art,rev:o.rev});
         histAdded++;
       }
-      addLog(`Отчёт: добавлено ${histAdded} истор. заказов${apiMin?` (до ${fmtDate(apiMin)})`:""}`,"now");
+      addLog(`Отчёт: ${histAdded} заказов в диапазоне`,"now");
     }catch(e){addLog("Отчёт №2: "+e.message,"warn");}
   }
+
+  // merge: for each date take source with MORE orders (complete > stale)
+  const dayMap=new Map();
+  const allDates=new Set([...apiDayMap.keys(),...repDayMap.keys()]);
+  let usedApi=0,usedRep=0;
+  for(const date of allDates){
+    const a=apiDayMap.get(date)||[];
+    const r=repDayMap.get(date)||[];
+    if(a.length>=r.length){dayMap.set(date,a);usedApi++;}
+    else{dayMap.set(date,r);usedRep++;}
+  }
+  addLog(`Мердж: ${allDates.size} дней (${usedApi} API, ${usedRep} отчёт)`,"now");
 
   // collect all unique arts for nomatch debugging
   const allArts=new Set();
@@ -427,7 +447,7 @@ async function runPipeline(){
   stepNow(4);
   const res=reg.map(it=>analyze(it,dayMap,cost,today,allArts));
   flagOverlaps(res);
-  return{integrations:res,meta:{apiTotal,histAdded,reportRows,apiMin,apiMax,from:globalFrom,to:globalTo,costRows:Object.keys(cost.map).length,hasBuyout:cost.hasBuyout}};
+  return{integrations:res,meta:{apiTotal,histAdded,usedApi,usedRep,apiMin,apiMax,from:globalFrom,to:globalTo,costRows:Object.keys(cost.map).length,hasBuyout:cost.hasBuyout}};
 }
 
 function analyze(it,dayMap,cost,today,allArts){
@@ -519,7 +539,7 @@ function renderKpis(R){
   ];
   $("#kpis").innerHTML=k.map(([l,v,s,c])=>`<div class="kpi ${c}"><div class="bar"></div><div class="k-l">${l}</div><div class="k-v">${v}</div><div class="k-s">${s}</div></div>`).join("");
   const mt=state.computed.meta;
-  $("#periodChip").textContent=`${fmtDate(mt.from)} → ${fmtDate(mt.to)} · API ${num(mt.apiTotal)}`+(mt.histAdded?` + отчёт ${num(mt.histAdded)}`:``)+` зак.`;
+  $("#periodChip").textContent=`${fmtDate(mt.from)} → ${fmtDate(mt.to)} · ${mt.usedApi} дн. API + ${mt.usedRep} дн. отчёт`;
 }
 function monthsAgg(R){const map={};
   for(const r of R){const ym=r.date.slice(0,7);if(!map[ym])map[ym]={count:0,spend:0,xRev:0,fin:0};
