@@ -179,6 +179,12 @@ tfoot td.l{text-align:left}
     </div>
 
     <div class="mt">
+      <label class="label">Отчёт ВБ №2 — исторические заказы (ссылка CSV)</label>
+      <input id="report" class="fld" type="text" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vRHmDOfUKYgGrjZl6iocQ-gkkXET4_Ts7fw7dYIBB9_nGk-_KCU8pjnFoawiqbjZEZBHTgtJubJm3lT/pub?gid=1646776592&single=true&output=csv">
+      <div class="hint">WB API отдаёт заказы только за последние месяцы. Для интеграций 2025 года заказы берутся из этого отчёта. Нужны колонки <b>Дата</b> и <b>supplierArticle</b> (цена — опционально). Отчёт используется для дат раньше тех, что вернул API.</div>
+    </div>
+
+    <div class="mt">
       <label class="label">Таблица себестоимости (прибыль + выкуп)</label>
       <input id="cost" class="fld" type="text" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQZuc_t740K_yF5Nhw3saPZcbyxchMhJ93WrS05BbLY9OqqXtj3y5xG6WaraGsI4Z7SmNTHFyBlNTcn/pub?gid=0&single=true&output=csv">
       <div class="hint">Колонки: <b>supplierArticle</b>, <b>Прибыль до рекламы</b>, опц. <b>Выкупаемость</b>. Если не читается — Файл → Опубликовать в интернете → CSV, и вставьте <code>pub</code>-ссылку.</div>
@@ -267,7 +273,7 @@ tfoot td.l{text-align:left}
           <th class="l" data-k="rootsRaw">Артикулы</th>
           <th data-k="price">Цена</th>
           <th data-k="baseUnits">База/день</th>
-          <th data-k="winUnits">В окне</th>
+          <th data-k="winUnits" id="thEff">Эффект 4д</th>
           <th data-k="extraUnits">Экстра шт</th>
           <th data-k="extraRev">Экстра ₽</th>
           <th data-k="buyout">Выкуп</th>
@@ -281,7 +287,8 @@ tfoot td.l{text-align:left}
       </table>
     </div>
     <div class="hint" style="margin-top:10px">
-      Экстра = (заказы в окне) − (средняя база × дни окна). Финрезультат = экстра штук × выкуп × прибыль/шт.
+      База = среднее заказов/день за N дней до интеграции. Эффект = день интеграции + M дней после.
+      Экстра = заказы за дни эффекта − (база × число дней эффекта). Финрезультат = экстра штук × выкуп × прибыль/шт.
       Чистый итог = финрезультат − цена интеграции. Возврат = финрезультат ÷ цена.
       Флаги: <span class="flag over">пересеч.</span> окна перекрываются ·
       <span class="flag nocost">нет с/с</span> нет себестоимости ·
@@ -311,16 +318,16 @@ tfoot td.l{text-align:left}
 <script>
 const $ = s => document.querySelector(s);
 const WB_STAT = "https://statistics-api.wildberries.ru";
-const state = { token:"",proxy:"",registry:"",cost:"",baseDays:3,effDays:3,buyout:100,incCancel:false,priceField:"finishedPrice",computed:null };
+const state = { token:"",proxy:"",registry:"",cost:"",report:"",baseDays:3,effDays:3,buyout:100,incCancel:false,priceField:"finishedPrice",computed:null };
 const charts = {};
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
 /* ---------- persistence ---------- */
 function saveCfg(){ try{ localStorage.setItem("ef_int_cfg", JSON.stringify({
-  proxy:state.proxy,registry:state.registry,cost:state.cost,baseDays:state.baseDays,effDays:state.effDays,
+  proxy:state.proxy,registry:state.registry,cost:state.cost,report:state.report,baseDays:state.baseDays,effDays:state.effDays,
   buyout:state.buyout,incCancel:state.incCancel,priceField:state.priceField })); }catch(e){} }
 function loadCfg(){ try{ const c=JSON.parse(localStorage.getItem("ef_int_cfg")||"{}");
-  if(c.proxy)$("#proxy").value=c.proxy; if(c.registry)$("#registry").value=c.registry; if(c.cost)$("#cost").value=c.cost;
+  if(c.proxy)$("#proxy").value=c.proxy; if(c.registry)$("#registry").value=c.registry; if(c.cost)$("#cost").value=c.cost; if(c.report)$("#report").value=c.report;
   if(c.baseDays)$("#baseDays").value=c.baseDays; if(c.effDays!=null)$("#effDays").value=c.effDays;
   if(c.buyout)$("#buyout").value=c.buyout; if(c.incCancel)$("#incCancel").value="1"; if(c.priceField)$("#priceField").value=c.priceField;
 }catch(e){} }
@@ -423,6 +430,24 @@ function parseCost(text){
   return {map,hasBuyout};
 }
 
+/* ---------- report #2 (historical orders) ---------- */
+function parseReport(text){
+  const rows=tableRows(text,detectDelim(text)); if(rows.length<2) return {rows:[],head:[]};
+  const head=rows[0].map(h=>h.toLowerCase().trim());
+  const col=preds=>head.findIndex(h=>preds.some(p=>h.includes(p)));
+  const cD=col(["дата заказа","дата продаж","дата","date"]);
+  const cA=col(["артикул продавца","supplierarticle","артикул","article"]);
+  const cP=col(["цена со скид","финальная цена","к перечислению","розничная","сумма заказ","сумма","цена","price","amount"]);
+  if(cD<0||cA<0) return {rows:[],head,err:"нет колонок даты/артикула"};
+  const out=[];
+  for(let i=1;i<rows.length;i++){ const r=rows[i]; if(!r) continue;
+    const date=parseRegDate(r[cD]); if(!date) continue;
+    const art=norm(r[cA]); if(!art) continue;
+    out.push({date,art,rev:cP>=0?(parseNum(r[cP])||0):0});
+  }
+  return {rows:out,head};
+}
+
 /* ---------- orders (paginated by lastChangeDate) ---------- */
 async function fetchOrders(fromISO){
   let from=fromISO+"T00:00:00"; const seen=new Set(); const all=[]; let guard=0;
@@ -439,7 +464,7 @@ async function fetchOrders(fromISO){
 
 /* ---------- pipeline ---------- */
 async function runPipeline(){
-  setSteps(["Читаю реестр интеграций","Читаю таблицу себестоимости","Гружу заказы из WB (Статистика)","Считаю эффект каждой интеграции"]);
+  setSteps(["Читаю реестр интеграций","Читаю таблицу себестоимости","Гружу заказы из WB (Статистика)","Подключаю отчёт №2 (история)","Считаю эффект каждой интеграции"]);
   stepNow(0);
   const reg=parseRegistry(await fetchSheet(state.registry));
   if(!reg.length) throw new Error("В реестре не найдено ни одной интеграции с датой.");
@@ -454,21 +479,46 @@ async function runPipeline(){
   const globalFrom=addDays(minD,-state.baseDays-1);
   const today=todayISO();
   const globalTo=(addDays(maxD,state.effDays)<today?addDays(maxD,state.effDays):today);
-  const orders=await fetchOrders(globalFrom);
+  let orders=[];
+  try{ orders=await fetchOrders(globalFrom); }
+  catch(e){ addLog("WB API заказы не получены: "+e.message+" (беру только отчёт №2)","warn"); }
 
-  stepNow(3);
   const dayMap=new Map();   // date -> [{art,rev}]
+  let apiMin=null, apiMax=null;
   for(const o of orders){
     const date=dateOnly(o.date); if(date<globalFrom||date>globalTo) continue;
     if(!state.incCancel&&o.isCancel) continue;
     const rev=(parseFloat(o[state.priceField])||parseFloat(o.finishedPrice)||parseFloat(o.priceWithDisc)||parseFloat(o.totalPrice)||0);
     if(!dayMap.has(date)) dayMap.set(date,[]);
     dayMap.get(date).push({art:o.supplierArticle||"",rev});
+    if(apiMin===null||date<apiMin) apiMin=date; if(apiMax===null||date>apiMax) apiMax=date;
+  }
+  let apiCount=0; for(const a of dayMap.values()) apiCount+=a.length;
+
+  // step 3: report #2 fills dates the API doesn't cover (older than apiMin)
+  stepNow(3);
+  let histAdded=0, reportRows=0;
+  if(state.report.trim()){
+    try{
+      const rep=parseReport(await fetchSheet(state.report));
+      reportRows=rep.rows.length;
+      if(rep.err) addLog("Отчёт №2: "+rep.err+" — колонки: "+rep.head.join(", "),"warn");
+      for(const o of rep.rows){
+        if(o.date<globalFrom||o.date>globalTo) continue;
+        if(apiMin && o.date>=apiMin) continue;   // этот день уже закрыт живым API
+        if(!dayMap.has(o.date)) dayMap.set(o.date,[]);
+        dayMap.get(o.date).push({art:o.art,rev:o.rev});
+        histAdded++;
+      }
+      addLog(`Отчёт №2: строк ${reportRows}, добавлено истор. заказов ${histAdded}${apiMin?` (за даты до ${fmtDate(apiMin)})`:""}`,"now");
+    }catch(e){ addLog("Отчёт №2 не прочитан: "+e.message,"warn"); }
   }
 
+  stepNow(4);
   const res=reg.map(it=>analyze(it,dayMap,cost,today));
   flagOverlaps(res);
-  return { integrations:res, meta:{ ordersTotal:orders.length, from:globalFrom, to:globalTo, costRows:Object.keys(cost.map).length, hasBuyout:cost.hasBuyout } };
+  return { integrations:res, meta:{ ordersTotal:apiCount, histAdded, reportRows, apiMin, apiMax,
+    from:globalFrom, to:globalTo, costRows:Object.keys(cost.map).length, hasBuyout:cost.hasBuyout } };
 }
 
 function analyze(it,dayMap,cost,today){
@@ -520,6 +570,7 @@ const num=v=>fmt.format(Math.round(v));
 
 function render(){
   const R=state.computed.integrations, M=state.computed.meta;
+  $("#thEff").textContent=`Эффект ${state.effDays+1}д`;
   renderKpis(R); renderMonths(R); renderMoney(R); renderNet(R); renderUnits(R); renderTable(R);
 }
 
@@ -545,7 +596,8 @@ function renderKpis(R){
     ["Окно",`−${state.baseDays} / +${state.effDays} дн`,`база / эффект`,""],
   ];
   $("#kpis").innerHTML=k.map(([l,v,s,c])=>`<div class="kpi ${c}"><div class="bar"></div><div class="k-l">${l}</div><div class="k-v">${v}</div><div class="k-s">${s}</div></div>`).join("");
-  $("#periodChip").textContent=`данные ${fmtDate(state.computed.meta.from)} → ${fmtDate(state.computed.meta.to)} · ${num(state.computed.meta.ordersTotal)} заказов`;
+  const mt=state.computed.meta;
+  $("#periodChip").textContent=`${fmtDate(mt.from)} → ${fmtDate(mt.to)} · API ${num(mt.ordersTotal)}`+(mt.histAdded?` + отчёт ${num(mt.histAdded)}`:``)+` зак.`;
 }
 
 function monthsAgg(R){
@@ -668,7 +720,7 @@ document.addEventListener("click",e=>{
 /* ---------- config / wiring ---------- */
 function readCfg(){
   state.token=$("#token").value; state.proxy=$("#proxy").value;
-  state.registry=$("#registry").value; state.cost=$("#cost").value;
+  state.registry=$("#registry").value; state.cost=$("#cost").value; state.report=$("#report").value;
   state.baseDays=Math.max(1,+$("#baseDays").value||3);
   state.effDays=Math.max(0,+$("#effDays").value||3);
   state.buyout=Math.max(1,+$("#buyout").value||100);
