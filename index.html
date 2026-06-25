@@ -414,17 +414,43 @@ async function runPipeline(){
   let histAdded=0,reportRows=0;
   if(state.report.trim()){
     try{
-      const rep=parseReport(await fetchSheet(state.report));
+      const rawText=await fetchSheet(state.report);
+      addLog(`Отчёт: файл ${rawText.length} символов`,"now");
+      const rep=parseReport(rawText);
       reportRows=rep.rows.length;
-      if(rep.err)addLog("Отчёт №2: "+rep.err,"warn");
-      else addLog(`Отчёт №2: ${reportRows} строк прочитано`,"now");
+      if(rep.err){addLog("Отчёт ⚠: "+rep.err,"warn");}
+      else{
+        // diagnostic: show what was found
+        const hdShort=rep.head.slice(0,8).join(" | ");
+        addLog(`Отчёт: колонки → ${hdShort}`,"now");
+        if(rep.rows.length>0){
+          const s=rep.rows[0];
+          addLog(`Отчёт: пример строки → дата: ${s.date}, арт: ${s.art}, цена: ${s.rev}`,"now");
+          // date range
+          let dMin=s.date,dMax=s.date;
+          for(const o of rep.rows){if(o.date<dMin)dMin=o.date;if(o.date>dMax)dMax=o.date;}
+          addLog(`Отчёт: даты от ${fmtDate(dMin)} до ${fmtDate(dMax)}, строк: ${rep.rows.length}`,"now");
+        }
+      }
       for(const o of rep.rows){
         if(o.date<globalFrom||o.date>globalTo)continue;
         if(!repDayMap.has(o.date))repDayMap.set(o.date,[]);
         repDayMap.get(o.date).push({art:o.art,rev:o.rev});
         histAdded++;
       }
-      addLog(`Отчёт: ${histAdded} заказов в диапазоне`,"now");
+      addLog(`Отчёт: ${histAdded} заказов попало в диапазон ${fmtDate(globalFrom)}→${fmtDate(globalTo)}`,"now");
+      // diagnostic: check specific dates around 03.07.2025
+      const probe="2025-07-03";
+      const pArr=repDayMap.get(probe)||[];
+      if(pArr.length>0){
+        const sample=pArr.slice(0,5).map(o=>o.art).join(", ");
+        addLog(`Проверка ${fmtDate(probe)}: ${pArr.length} заказов, арт: ${sample}`,"now");
+      } else {
+        // check nearby dates
+        const nearby=["2025-07-01","2025-07-02","2025-07-04","2025-06-30"];
+        const found=nearby.filter(d=>repDayMap.has(d)&&repDayMap.get(d).length>0);
+        addLog(`Проверка ${fmtDate(probe)}: 0 заказов. Ближайшие с данными: ${found.map(d=>fmtDate(d)+"("+repDayMap.get(d).length+")").join(", ")||"нет"}`,"warn");
+      }
     }catch(e){addLog("Отчёт №2: "+e.message,"warn");}
   }
 
@@ -477,20 +503,16 @@ function analyze(it,dayMap,cost,today,allArts){
   const net=(financial!=null&&it.price!=null)?financial-it.price:null;
   const roi=(financial!=null&&it.price)?financial/it.price:null;
   const matched=totUnits>0||winU>0||baseU>0;
-  // debug: if no match, find similar arts from allArts
   let debugHint="";
-  if(!matched&&!future&&allArts){
-    const near=[];
-    for(const a of allArts){const na=normArt(a);for(const rt of it.roots){
-      if(na.includes(rt.slice(0,4))||rt.includes(na.slice(0,4))){near.push(a);if(near.length>=5)break;}}
-      if(near.length>=5)break;}
-    debugHint=`Искал корни: ${it.roots.join(", ")}`;
-    if(near.length)debugHint+=` | похожие в заказах: ${near.join(", ")}`;
-    else{
-      // count orders in window
-      let totalInWin=0;for(const d of [...baseWin,...effWin]){const arr=dayMap.get(d)||[];totalInWin+=arr.length;}
-      debugHint+=` | заказов в окне (всех): ${totalInWin}`;
-    }
+  if(!matched&&!future){
+    const allWinDates=[...baseWin,...effWin];
+    const dateCounts=allWinDates.map(d=>{const a=dayMap.get(d)||[];return`${fmtDate(d).slice(0,5)}:${a.length}шт`;});
+    debugHint=`Корни: ${it.roots.join(", ")} | Дни: ${dateCounts.join(", ")}`;
+    // sample arts from those days
+    const sampleArts=new Set();
+    for(const d of allWinDates){const arr=dayMap.get(d)||[];for(const o of arr){sampleArts.add(o.art);if(sampleArts.size>=6)break;}if(sampleArts.size>=6)break;}
+    if(sampleArts.size>0)debugHint+=` | Артикулы в заказах: ${[...sampleArts].join(", ")}`;
+    else debugHint+=` | dayMap пуст для этих дат`;
   }
   return{...it,future,baseUnitsDay,baseRevDay,winUnits:winU,extraUnits,extraRev,
     profitUnit,buyout,financial,net,roi,hasCost,matched,series,effLen,debugHint};
