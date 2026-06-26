@@ -47,10 +47,10 @@ tfoot td{position:sticky;bottom:0;background:#ede6d9;font-weight:800;padding:9px
   <div class="mt"><label class="label">Себестоимость (CSV)</label><input id="cost" class="fld" type="text" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQZuc_t740K_yF5Nhw3saPZcbyxchMhJ93WrS05BbLY9OqqXtj3y5xG6WaraGsI4Z7SmNTHFyBlNTcn/pub?gid=0&single=true&output=csv"></div>
   <div class="row3 mt">
     <div><label class="label">База ДО интеграции, дн</label><input id="baseDays" class="fld" type="number" min="1" max="14" value="3"></div>
-    <div><label class="label">Эффект ПОСЛЕ (+ день интегр.)</label><input id="effDays" class="fld" type="number" min="0" max="14" value="3"></div>
+    <div><label class="label">Эффект, дней (вкл. день интегр.)</label><input id="effDays" class="fld" type="number" min="1" max="14" value="5"></div>
     <div><label class="label">Выкуп по умолч., %</label><input id="buyout" class="fld" type="number" min="1" max="100" value="100"></div>
   </div>
-  <div class="hint">База = среднее за N дней до. Эффект = день интеграции + M дней после (итого M+1 дней). Все заказы × выкупаемость.</div>
+  <div class="hint">База = среднее за N дней до интеграции. Эффект = N дней начиная с дня интеграции. Все заказы × выкупаемость.</div>
   <button id="load" class="btn-primary mt">Построить отчёт</button>
   <div id="cfgErr" class="err hidden"></div>
 </div></section>
@@ -71,6 +71,11 @@ tfoot td{position:sticky;bottom:0;background:#ede6d9;font-weight:800;padding:9px
 
   <div class="panel"><h3>Сводка по блогерам</h3>
     <div class="tablewrap"><table><thead><tr><th class="l">Блогер</th><th>Интегр.</th><th>Бюджет</th><th>Экстра шт</th><th>Экстра ₽</th><th>Финрез.</th><th>Чистый</th><th>Возврат</th></tr></thead><tbody id="tbBlog"></tbody></table></div>
+    <div class="hint" style="margin-top:6px">Клик по блогеру → раскроет артикулы</div>
+  </div>
+
+  <div class="panel"><h3>Сводка по артикулам</h3>
+    <div class="tablewrap"><table><thead><tr><th class="l">Артикул</th><th>Рекламировали раз</th><th>Экстра шт</th><th>Доля бюджета</th><th>Финрез.</th><th>Чистый</th></tr></thead><tbody id="tbArt"></tbody></table></div>
   </div>
 
   <div class="panel hidden" id="drillPanel"><h3 id="drillTitle">Заказы вокруг даты</h3>
@@ -85,11 +90,7 @@ tfoot td{position:sticky;bottom:0;background:#ede6d9;font-weight:800;padding:9px
       <th data-k="extraUnits">Экстра шт</th><th data-k="extraRev">Экстра ₽</th><th data-k="buyout">Выкуп</th><th data-k="profitUnit">Приб/шт</th>
       <th data-k="financial">Финрез.</th><th data-k="net">Чистый итог</th><th data-k="roi">Возврат</th>
     </tr></thead><tbody id="tbody"></tbody><tfoot id="tfoot"></tfoot></table></div>
-    <div class="hint" style="margin-top:10px">База = среднее за N дней ДО интеграции. Эффект = день интеграции + M дней после. Клик → артикулы.</div>
-  </div>
-
-  <div class="panel"><h3>Сводка по артикулам</h3>
-    <div class="tablewrap"><table><thead><tr><th class="l">Артикул</th><th>Рекламировали раз</th><th>Экстра шт</th><th>Доля бюджета</th><th>Финрез.</th><th>Чистый</th></tr></thead><tbody id="tbArt"></tbody></table></div>
+    <div class="hint" style="margin-top:10px">База = среднее за N дней ДО интеграции. Эффект = N дней начиная с дня интеграции. Клик → артикулы.</div>
   </div>
 </section>
 
@@ -127,7 +128,7 @@ async function runPipeline(){
   setSteps(["Реестр","Себестоимость","Заказы WB","Отчёт №2","Расчёт"]);
   stepNow(0);const reg=parseRegistry(await fetchSheet(state.registry));if(!reg.length)throw new Error("Нет интеграций.");
   stepNow(1);let cost={map:{},hasBuyout:false};try{const ct=await fetchSheet(state.cost);if(ct)cost=parseCost(ct);}catch(e){addLog("С/с: "+e.message,"warn");}
-  stepNow(2);const minD=reg[0].date,maxD=reg[reg.length-1].date;const globalFrom=addDays(minD,-state.baseDays-1);const today=todayISO();const globalTo=addDays(maxD,state.effDays)<today?addDays(maxD,state.effDays):today;
+  stepNow(2);const minD=reg[0].date,maxD=reg[reg.length-1].date;const globalFrom=addDays(minD,-state.baseDays-1);const today=todayISO();const globalTo=addDays(maxD,state.effDays-1)<today?addDays(maxD,state.effDays-1):today;
   const apiDayMap=new Map();let apiMin=null,apiMax=null,apiTotal=0;
   const cabs=[{name:"EF",token:state.tokenEF},{name:"EZFR",token:state.tokenEZFR}].filter(c=>c.token.trim());
   for(const cab of cabs){addLog(`${cab.name}…`,"now");try{const orders=await fetchOrders(globalFrom,cab.token);let added=0;for(const o of orders){const date=dateOnly(o.date);if(date<globalFrom||date>globalTo)continue;const rev=parseFloat(o.finishedPrice)||parseFloat(o.priceWithDisc)||parseFloat(o.totalPrice)||0;if(!apiDayMap.has(date))apiDayMap.set(date,[]);apiDayMap.get(date).push({art:o.supplierArticle||"",rev});if(apiMin===null||date<apiMin)apiMin=date;if(apiMax===null||date>apiMax)apiMax=date;added++;}apiTotal+=added;addLog(`${cab.name}: ${added} зак.`,"now");}catch(e){addLog(`${cab.name}: ${e.message}`,"warn");}}
@@ -142,9 +143,9 @@ async function runPipeline(){
 
 function analyze(it,dayMap,cost,today){
   const baseDays=state.baseDays,effDays=state.effDays;
-  const future=addDays(it.date,effDays)>today;
+  const future=addDays(it.date,effDays-1)>today;
   const baseWin=[...dayRange(addDays(it.date,-baseDays),addDays(it.date,-1))];
-  const effWin=[...dayRange(it.date,addDays(it.date,effDays))];
+  const effWin=[...dayRange(it.date,addDays(it.date,effDays-1))];
   const bn=baseWin.length;
   // per-article breakdown
   const artBase={},artEff={};
@@ -178,13 +179,13 @@ function analyze(it,dayMap,cost,today){
   const roi=financial!=null&&it.price?financial/it.price:null;
   const matched=totalEffU>0||totalBaseU>0;
   // series for drill chart
-  const fullWin=[...dayRange(addDays(it.date,-baseDays),addDays(it.date,effDays))];
+  const fullWin=[...dayRange(addDays(it.date,-baseDays),addDays(it.date,effDays-1))];
   const series=fullWin.map(d=>{const arr=dayMap.get(d)||[];let u=0;for(const o of arr){const na=normArt(o.art);if(it.roots.some(rt=>na.includes(rt)))u++;}return{date:d,u,base:baseWin.includes(d),eff:effWin.includes(d)};});
   let debugHint="";
   if(!matched&&!future){const dts=[...baseWin,...effWin];const dc=dts.map(d=>{const a=dayMap.get(d)||[];return fmtDate(d).slice(0,5)+":"+a.length;});debugHint=`Корни: ${it.roots.join(", ")} | ${dc.join(", ")}`;const sa=new Set();for(const d of dts){for(const o of (dayMap.get(d)||[]))sa.add(o.art);if(sa.size>=5)break;}if(sa.size)debugHint+=` | Арт: ${[...sa].join(", ")}`;}
   return{...it,future,baseUnitsDay,winUnits:totalEffU,extraUnits,extraRev,profitUnit,buyout,financial,net,roi,hasCost,matched,series,effLen,artBreakdown,debugHint};
 }
-function flagOverlaps(res){const span=state.baseDays+state.effDays;for(let i=0;i<res.length;i++){res[i].overlap=false;for(let j=0;j<res.length;j++){if(i===j)continue;if(Math.abs((new Date(res[i].date)-new Date(res[j].date))/86400000)<=span){res[i].overlap=true;break;}}}}
+function flagOverlaps(res){const span=state.baseDays+state.effDays-1;for(let i=0;i<res.length;i++){res[i].overlap=false;for(let j=0;j<res.length;j++){if(i===j)continue;if(Math.abs((new Date(res[i].date)-new Date(res[j].date))/86400000)<=span){res[i].overlap=true;break;}}}}
 
 const fmt=new Intl.NumberFormat("ru-RU");const money=v=>fmt.format(Math.round(v))+" ₽";const money0=v=>v==null?'<span class="zero">—</span>':money(v);const num=v=>fmt.format(Math.round(v));
 let periodFilter="all";
@@ -193,7 +194,7 @@ function filteredR(){const f=periodFrom();return state.computed.integrations.fil
 function updatePrdBtns(){document.querySelectorAll(".prd-btn").forEach(b=>b.classList.toggle("active",b.dataset.p===periodFilter));}
 function render(){
   const R=filteredR();
-  $("#thEff").textContent=`Эффект ${state.effDays+1}д`;
+  $("#thEff").textContent=`Эффект ${state.effDays}д`;
   $("#thBase").textContent=`База ${state.baseDays}д/день`;
   updatePrdBtns();
   const mt=state.computed.meta;
@@ -206,14 +207,34 @@ function renderKpis(R){const m=measured(R);const spend=R.reduce((s,r)=>s+(r.pric
   $("#kpis").innerHTML=k.map(([l,v,s,c])=>`<div class="kpi ${c}"><div class="bar"></div><div class="k-l">${l}</div><div class="k-v">${v}</div><div class="k-s">${s}</div></div>`).join("");}
 
 function renderBloggers(R){
-  const map={};for(const r of R){const b=r.blogger||"—";if(!map[b])map[b]={n:0,price:0,xu:0,xr:0,fin:0};map[b].n++;map[b].price+=(r.price||0);if(!r.future&&r.matched){map[b].xu+=r.extraUnits;map[b].xr+=r.extraRev;}map[b].fin+=(r.financial||0);}
+  const map={};for(const r of R){const b=r.blogger||"—";if(!map[b])map[b]={n:0,price:0,xu:0,xr:0,fin:0,arts:{}};map[b].n++;map[b].price+=(r.price||0);
+    if(!r.future&&r.matched){map[b].xu+=r.extraUnits;map[b].xr+=r.extraRev;
+      const nA=Object.keys(r.artBreakdown).length||1;const sh=(r.price||0)/nA;
+      for(const[a,d]of Object.entries(r.artBreakdown)){if(!map[b].arts[a])map[b].arts[a]={n:0,xu:0,price:0,fin:0};map[b].arts[a].n++;map[b].arts[a].xu+=d.extra;map[b].arts[a].price+=sh;map[b].arts[a].fin+=(d.financial||0);}
+    }map[b].fin+=(r.financial||0);}
   const rows=Object.entries(map).sort((a,b)=>b[1].n-a[1].n);
-  $("#tbBlog").innerHTML=rows.map(([b,d])=>{const net=d.fin-d.price;const roi=d.price>0?d.fin/d.price:null;return`<tr><td class="l art-cell">${esc(b)}</td><td>${d.n}</td><td>${money(d.price)}</td><td class="${d.xu>=0?'posv':'neg'}">${num(d.xu)}</td><td>${money(d.xr)}</td><td>${money(d.fin)}</td><td class="${net>=0?'posv':'neg'}">${money(net)}</td><td>${roi!=null?roi.toFixed(2).replace(".",",")+"×":"—"}</td></tr>`;}).join("");}
+  let html="";for(const[b,d]of rows){
+    const net=d.fin-d.price;const roi=d.price>0?d.fin/d.price:null;
+    html+=`<tr class="blog-row" data-blog="${esc(b)}" style="cursor:pointer"><td class="l art-cell">▸ ${esc(b)}</td><td>${d.n}</td><td>${money(d.price)}</td><td class="${d.xu>=0?'posv':'neg'}">${num(d.xu)}</td><td>${money(d.xr)}</td><td>${money(d.fin)}</td><td class="${net>=0?'posv':'neg'}">${money(net)}</td><td>${roi!=null?roi.toFixed(2).replace(".",",")+"×":"—"}</td></tr>`;
+    const arts=Object.entries(d.arts).sort((a,b)=>b[1].xu-a[1].xu);
+    for(const[a,ad]of arts){const an=ad.fin-ad.price;
+      html+=`<tr class="blog-sub blog-sub-${esc(b)}" style="display:none"><td class="l" style="padding-left:28px;color:var(--ink2)">${esc(a)}</td><td>${ad.n}</td><td>${money(ad.price)}</td><td class="${ad.xu>=0?'posv':'neg'}">${num(ad.xu)}</td><td></td><td>${money(ad.fin)}</td><td class="${an>=0?'posv':'neg'}">${money(an)}</td><td></td></tr>`;
+    }
+  }
+  $("#tbBlog").innerHTML=html;
+}
 
 function renderArticles(R){
-  const map={};for(const r of R){if(r.future||!r.matched)continue;const nArts=Object.keys(r.artBreakdown).length||1;const share=(r.price||0)/nArts;for(const[a,d]of Object.entries(r.artBreakdown)){if(!map[a])map[a]={n:0,xu:0,price:0,fin:0};map[a].n++;map[a].xu+=d.extra;map[a].price+=share;map[a].fin+=(d.financial||0);}}
+  const map={};for(const r of R){if(r.future||!r.matched)continue;const nA=Object.keys(r.artBreakdown).length||1;const sh=(r.price||0)/nA;for(const[a,d]of Object.entries(r.artBreakdown)){if(!map[a])map[a]={n:0,xu:0,price:0,fin:0};map[a].n++;map[a].xu+=d.extra;map[a].price+=sh;map[a].fin+=(d.financial||0);}}
   const rows=Object.entries(map).sort((a,b)=>b[1].n-a[1].n);
-  $("#tbArt").innerHTML=rows.map(([a,d])=>{const net=d.fin-d.price;return`<tr><td class="l art-cell">${esc(a)}</td><td>${d.n}</td><td class="${d.xu>=0?'posv':'neg'}">${num(d.xu)}</td><td>${money(d.price)}</td><td>${money(d.fin)}</td><td class="${net>=0?'posv':'neg'}">${money(net)}</td></tr>`;}).join("");}
+  const limit=10;const show=rows.slice(0,limit);const rest=rows.slice(limit);
+  let html=show.map(([a,d])=>{const net=d.fin-d.price;return`<tr><td class="l art-cell">${esc(a)}</td><td>${d.n}</td><td class="${d.xu>=0?'posv':'neg'}">${num(d.xu)}</td><td>${money(d.price)}</td><td>${money(d.fin)}</td><td class="${net>=0?'posv':'neg'}">${money(net)}</td></tr>`;}).join("");
+  if(rest.length){
+    html+=rest.map(([a,d])=>{const net=d.fin-d.price;return`<tr class="art-hidden" style="display:none"><td class="l art-cell">${esc(a)}</td><td>${d.n}</td><td class="${d.xu>=0?'posv':'neg'}">${num(d.xu)}</td><td>${money(d.price)}</td><td>${money(d.fin)}</td><td class="${net>=0?'posv':'neg'}">${money(net)}</td></tr>`;}).join("");
+    html+=`<tr><td colspan="6" style="text-align:center;padding:10px"><button class="btn-ghost" id="showAllArts" style="font-size:12px;padding:6px 14px">Показать ещё ${rest.length}</button></td></tr>`;
+  }
+  $("#tbArt").innerHTML=html;
+}
 
 function monthsAgg(R){const map={};for(const r of R){const ym=r.date.slice(0,7);if(!map[ym])map[ym]={count:0,spend:0,xRev:0};map[ym].count++;map[ym].spend+=(r.price||0);if(!r.future&&r.matched)map[ym].xRev+=r.extraRev;}const keys=Object.keys(map).sort();return{keys,map,lbl:keys.map(k=>{const[y,m]=k.split("-");return`${["","янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"][+m]} ${y.slice(2)}`;})};};
 const C={ink:'#2c2722',terra:'#c47150',sage:'#6f8f6a',teal:'#3a7d83',gold:'#b3955f',rust:'#b8553f',line:'#e2dacc',muted:'#9b9184'};
@@ -254,10 +275,12 @@ function renderDrill(r){
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 document.addEventListener("click",e=>{
   const pb=e.target.closest(".prd-btn");if(pb){periodFilter=pb.dataset.p;render();return;}
+  const br=e.target.closest(".blog-row");if(br){const b=br.dataset.blog;const subs=document.querySelectorAll(`.blog-sub-${CSS.escape(b)}`);const vis=subs[0]&&subs[0].style.display!=="none";subs.forEach(s=>s.style.display=vis?"none":"");br.querySelector("td").textContent=(vis?"▸ ":"▾ ")+b;return;}
+  if(e.target.id==="showAllArts"){document.querySelectorAll(".art-hidden").forEach(r=>r.style.display="");e.target.closest("tr").remove();return;}
   const th=e.target.closest("#tbl thead th");if(th){const k=th.dataset.k;if(!k)return;if(sortK===k)sortDir*=-1;else{sortK=k;sortDir=k==="date"?1:-1;}renderTable(filteredR());return;}
   const tr=e.target.closest("#tbody tr");if(tr){const idx=+tr.dataset.idx;selIdx=idx;renderTable(filteredR());renderDrill(state.computed.integrations[idx]);}
 });
-function readCfg(){state.tokenEF=$("#tokenEF").value;state.tokenEZFR=$("#tokenEZFR").value;state.proxy=$("#proxy").value;state.registry=$("#registry").value;state.cost=$("#cost").value;state.report=$("#report").value;state.baseDays=Math.max(1,+$("#baseDays").value||3);state.effDays=Math.max(0,+$("#effDays").value||3);state.buyout=Math.max(1,+$("#buyout").value||100);}
+function readCfg(){state.tokenEF=$("#tokenEF").value;state.tokenEZFR=$("#tokenEZFR").value;state.proxy=$("#proxy").value;state.registry=$("#registry").value;state.cost=$("#cost").value;state.report=$("#report").value;state.baseDays=Math.max(1,+$("#baseDays").value||3);state.effDays=Math.max(1,+$("#effDays").value||5);state.buyout=Math.max(1,+$("#buyout").value||100);}
 function validate(){if(!state.tokenEF.trim()&&!state.tokenEZFR.trim())return"Введите хотя бы один токен.";if(!/^https?:\/\//.test(state.proxy.trim()))return"URL прокси.";if(!/^https?:\/\//.test(state.registry.trim()))return"Ссылка на реестр.";return null;}
 async function go(){readCfg();const v=validate();const ce=$("#cfgErr");if(v){ce.textContent=v;ce.classList.remove("hidden");return;}ce.classList.add("hidden");saveCfg();$("#loader").classList.add("on");try{state.computed=await runPipeline();stepsDone();await sleep(250);$("#config").classList.add("hidden");$("#dash").classList.remove("hidden");render();}catch(e){ce.textContent="Ошибка: "+(e.message||e);ce.classList.remove("hidden");}finally{$("#loader").classList.remove("on");}}
 $("#load").addEventListener("click",go);
