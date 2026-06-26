@@ -9,718 +9,271 @@
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root{
-  --bg1:#efe9df;--bg2:#f6f2ea;--bg3:#e7ddd0;
-  --card:#fbf8f2;--card2:#fdfbf6;
-  --ink:#2c2722;--ink2:#4a4339;--muted:#9b9184;--faint:#bcb3a4;
-  --line:#ece6da;--line2:#e2dacc;
-  --token:#e2eaf6;--tokenline:#c9d6ee;
-  --pill:#e7ede4;--green:#4f7a52;--greendot:#5c9460;
-  --gold:#b3955f;--gold2:#9c7f4b;
-  --terra:#c47150;--sage:#6f8f6a;--teal:#3a7d83;--rust:#b8553f;
-  --radius:26px;--radius-s:14px;
-  --shadow:0 30px 60px -28px rgba(70,56,40,.40),0 8px 22px -14px rgba(70,56,40,.25);
-  --shadow-s:0 14px 30px -18px rgba(70,56,40,.35);
-}
+:root{--bg1:#efe9df;--bg2:#f6f2ea;--bg3:#e7ddd0;--card:#fbf8f2;--card2:#fdfbf6;--ink:#2c2722;--ink2:#4a4339;--muted:#9b9184;--faint:#bcb3a4;--line:#ece6da;--line2:#e2dacc;--token:#e2eaf6;--tokenline:#c9d6ee;--pill:#e7ede4;--green:#4f7a52;--greendot:#5c9460;--gold:#b3955f;--gold2:#9c7f4b;--terra:#c47150;--sage:#6f8f6a;--teal:#3a7d83;--rust:#b8553f;--radius:26px;--radius-s:14px;--shadow:0 30px 60px -28px rgba(70,56,40,.40),0 8px 22px -14px rgba(70,56,40,.25);--shadow-s:0 14px 30px -18px rgba(70,56,40,.35)}
 *{box-sizing:border-box}html,body{margin:0;padding:0}
-body{font-family:'Manrope',sans-serif;color:var(--ink);
-  background:radial-gradient(1200px 700px at 12% -8%,#fff8ee 0%,transparent 55%),
-    radial-gradient(1000px 800px at 108% 12%,#efe6d8 0%,transparent 50%),
-    linear-gradient(155deg,var(--bg2),var(--bg1) 55%,var(--bg3));
-  min-height:100vh;-webkit-font-smoothing:antialiased}
-.brandfont{font-family:'Comfortaa',cursive}
-button{font-family:inherit;cursor:pointer}input,select{font-family:inherit}
-a{color:var(--gold2);text-decoration:none;border-bottom:1px dotted var(--gold)}a:hover{color:var(--gold)}
-.hidden{display:none!important}
-.logo{width:64px;height:64px;border-radius:18px;flex:0 0 auto;background:linear-gradient(145deg,#3a332b,#15110d);display:grid;place-items:center;color:#f3ede1;font-weight:700;box-shadow:0 10px 24px -12px rgba(40,30,15,.7),inset 0 1px 0 rgba(255,255,255,.08);position:relative;overflow:hidden}
-.logo span{font-family:'Comfortaa';font-size:26px;letter-spacing:-1px;background:linear-gradient(180deg,#fff,#cdbfa6);-webkit-background-clip:text;background-clip:text;color:transparent}
-.logo:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.18),transparent 60%)}
+body{font-family:'Manrope',sans-serif;color:var(--ink);background:radial-gradient(1200px 700px at 12% -8%,#fff8ee 0%,transparent 55%),radial-gradient(1000px 800px at 108% 12%,#efe6d8 0%,transparent 50%),linear-gradient(155deg,var(--bg2),var(--bg1) 55%,var(--bg3));min-height:100vh;-webkit-font-smoothing:antialiased}
+.brandfont{font-family:'Comfortaa',cursive}button{font-family:inherit;cursor:pointer}input,select{font-family:inherit}a{color:var(--gold2);text-decoration:none;border-bottom:1px dotted var(--gold)}a:hover{color:var(--gold)}.hidden{display:none!important}
+.logo{width:64px;height:64px;border-radius:18px;flex:0 0 auto;background:linear-gradient(145deg,#3a332b,#15110d);display:grid;place-items:center;color:#f3ede1;font-weight:700;box-shadow:0 10px 24px -12px rgba(40,30,15,.7),inset 0 1px 0 rgba(255,255,255,.08);position:relative;overflow:hidden}.logo span{font-family:'Comfortaa';font-size:26px;letter-spacing:-1px;background:linear-gradient(180deg,#fff,#cdbfa6);-webkit-background-clip:text;background-clip:text;color:transparent}.logo:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.18),transparent 60%)}
 .label{font-size:11.5px;font-weight:700;letter-spacing:.13em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;display:block}
-.pill{display:inline-flex;align-items:center;gap:9px;background:var(--pill);color:var(--green);font-weight:600;font-size:13.5px;padding:11px 16px;border-radius:13px;width:100%}
-.pill .dot{width:9px;height:9px;border-radius:50%;background:var(--greendot);box-shadow:0 0 0 4px rgba(92,148,96,.18)}
-.fld{width:100%;border:1.5px solid var(--line2);background:var(--card2);border-radius:var(--radius-s);padding:13px 16px;font-size:15px;color:var(--ink);transition:.15s;outline:none}
-.fld::placeholder{color:var(--faint)}.fld:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(179,149,95,.13)}
-.fld.token{background:var(--token);border-color:var(--tokenline)}.fld.token:focus{box-shadow:0 0 0 4px rgba(120,150,200,.16)}
-.btn-primary{width:100%;border:none;border-radius:16px;padding:17px;font-size:16px;font-weight:600;font-family:'Comfortaa';color:#f6f0e4;background:linear-gradient(145deg,#332c24,#1a160f);box-shadow:0 16px 30px -16px rgba(40,30,15,.7),inset 0 1px 0 rgba(255,255,255,.07);transition:.15s;letter-spacing:.01em}
-.btn-primary:hover{transform:translateY(-1px)}.btn-primary:active{transform:translateY(0)}.btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none}
-.btn-ghost{border:1.5px solid var(--line2);background:var(--card2);color:var(--ink2);border-radius:12px;padding:10px 16px;font-weight:600;font-size:14px;transition:.15s}
-.btn-ghost:hover{border-color:var(--gold);color:var(--ink)}
-.prd-btn.active{background:var(--ink);color:#f6f0e4;border-color:var(--ink)}
+.pill{display:inline-flex;align-items:center;gap:9px;background:var(--pill);color:var(--green);font-weight:600;font-size:13.5px;padding:11px 16px;border-radius:13px;width:100%}.pill .dot{width:9px;height:9px;border-radius:50%;background:var(--greendot);box-shadow:0 0 0 4px rgba(92,148,96,.18)}
+.fld{width:100%;border:1.5px solid var(--line2);background:var(--card2);border-radius:var(--radius-s);padding:13px 16px;font-size:15px;color:var(--ink);transition:.15s;outline:none}.fld::placeholder{color:var(--faint)}.fld:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(179,149,95,.13)}.fld.token{background:var(--token);border-color:var(--tokenline)}.fld.token:focus{box-shadow:0 0 0 4px rgba(120,150,200,.16)}
+.btn-primary{width:100%;border:none;border-radius:16px;padding:17px;font-size:16px;font-weight:600;font-family:'Comfortaa';color:#f6f0e4;background:linear-gradient(145deg,#332c24,#1a160f);box-shadow:0 16px 30px -16px rgba(40,30,15,.7),inset 0 1px 0 rgba(255,255,255,.07);transition:.15s;letter-spacing:.01em}.btn-primary:hover{transform:translateY(-1px)}.btn-primary:active{transform:translateY(0)}.btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.btn-ghost{border:1.5px solid var(--line2);background:var(--card2);color:var(--ink2);border-radius:12px;padding:10px 16px;font-weight:600;font-size:14px;transition:.15s}.btn-ghost:hover{border-color:var(--gold);color:var(--ink)}.prd-btn.active{background:var(--ink);color:#f6f0e4;border-color:var(--ink)}
 #config{min-height:100vh;display:grid;place-items:center;padding:32px 18px}
-.card{width:100%;max-width:660px;background:var(--card);border-radius:var(--radius);padding:38px 40px 34px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.6)}
-.head{display:flex;align-items:center;gap:18px;margin-bottom:26px}
-.head h1{font-family:'Comfortaa';font-size:34px;margin:0;font-weight:700;letter-spacing:-.5px}
-.head .sub{font-size:11.5px;font-weight:700;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin-top:5px}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
-.mt{margin-top:20px}.hint{font-size:12.5px;color:var(--muted);margin-top:7px;line-height:1.5}
-.err{background:#f6e2db;color:#a8452e;border-radius:12px;padding:12px 15px;font-size:13.5px;font-weight:500;margin-top:16px}
-.modal-bg{position:fixed;inset:0;background:rgba(44,39,34,.45);backdrop-filter:blur(3px);display:grid;place-items:center;z-index:50;padding:24px}
-.modal{background:var(--card);border-radius:22px;max-width:680px;width:100%;max-height:86vh;overflow:auto;padding:30px 32px;box-shadow:var(--shadow)}
-.modal h2{font-family:'Comfortaa';font-size:24px;margin:0 0 4px}.modal p,.modal ol{color:var(--ink2);font-size:14px;line-height:1.6}.modal ol{line-height:1.7;padding-left:20px}
-pre{background:#2a241d;color:#e8e0d0;border-radius:14px;padding:16px;overflow:auto;font-size:12px;line-height:1.5;font-family:ui-monospace,Menlo,monospace}
-.modal-x{float:right;border:none;background:var(--line);width:34px;height:34px;border-radius:10px;font-size:18px;color:var(--ink2)}
-#dash{padding:20px clamp(12px,3vw,36px) 48px;max-width:1500px;margin:0 auto}
-.topbar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px}
-.topbar .logo{width:44px;height:44px;border-radius:12px}.topbar .logo span{font-size:18px}
-.topbar h1{font-family:'Comfortaa';font-size:22px;margin:0;font-weight:700}
-.topbar .sub{font-size:10px;letter-spacing:.16em;color:var(--muted);font-weight:700;text-transform:uppercase}
-.topbar .spacer{flex:1}
-.period-chip{background:var(--card);border:1px solid var(--line2);border-radius:10px;padding:7px 13px;font-size:12px;font-weight:600;color:var(--ink2);box-shadow:var(--shadow-s);white-space:nowrap}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-@media(max-width:1000px){.kpis{grid-template-columns:repeat(2,1fr)}}
-.kpi{background:var(--card);border-radius:14px;padding:14px 16px 13px;box-shadow:var(--shadow-s);border:1px solid rgba(255,255,255,.6);position:relative;overflow:hidden;min-width:0}
-.kpi .k-l{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kpi .k-v{font-size:23px;font-weight:800;margin-top:5px;letter-spacing:-.3px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kpi .k-s{font-size:11px;color:var(--muted);margin-top:2px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kpi .bar{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--gold)}
-.kpi.accent .bar{background:var(--terra)}.kpi.accent .k-v{color:var(--terra)}
-.kpi.pos .bar{background:var(--sage)}.kpi.pos .k-v{color:var(--sage)}
-.kpi.profit .bar{background:var(--teal)}.kpi.profit .k-v{color:var(--teal)}
-.panel{background:var(--card);border-radius:18px;padding:18px 20px;box-shadow:var(--shadow-s);border:1px solid rgba(255,255,255,.6);margin-bottom:16px}
-.panel h3{font-family:'Comfortaa';font-size:16px;margin:0 0 13px;font-weight:600}
-.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
-.chartbox{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:13px 13px 6px}
-.chartbox .ct{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.chartwrap{position:relative;height:230px}.chartwrap.tall{height:300px}
-.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:620px}
-table{border-collapse:collapse;width:100%;font-size:11.5px;font-variant-numeric:tabular-nums}
-thead th{position:sticky;top:0;background:#f1ece2;color:var(--ink2);font-weight:700;font-size:10px;letter-spacing:.04em;text-transform:uppercase;text-align:right;padding:9px 10px;white-space:nowrap;cursor:pointer;border-bottom:2px solid var(--line2);z-index:2;user-select:none}
-thead th.l{text-align:left}thead th:hover{color:var(--gold2)}
-tbody td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;font-size:11.5px}
-tbody td.l{text-align:left}tbody tr{cursor:pointer}tbody tr:hover{background:#f6f1e8}tbody tr.sel{background:#eef2e9}
-.art-cell{font-weight:700;color:var(--ink)}.neg{color:var(--rust);font-weight:700}.posv{color:var(--sage);font-weight:700}.zero{color:var(--faint)}
-.flag{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:5px;vertical-align:middle;letter-spacing:.03em}
-.flag.over{background:#f3e7df;color:#a85a3a}.flag.plan{background:#e8e2d6;color:#7d7259}.flag.nocost{background:#f1e7d2;color:#9c7f4b}.flag.nomatch{background:#f6ddd6;color:#b8553f}
+.card{width:100%;max-width:660px;background:var(--card);border-radius:var(--radius);padding:38px 40px 34px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.6)}.head{display:flex;align-items:center;gap:18px;margin-bottom:26px}.head h1{font-family:'Comfortaa';font-size:34px;margin:0;font-weight:700;letter-spacing:-.5px}.head .sub{font-size:11.5px;font-weight:700;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin-top:5px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}.mt{margin-top:20px}.hint{font-size:12.5px;color:var(--muted);margin-top:7px;line-height:1.5}.err{background:#f6e2db;color:#a8452e;border-radius:12px;padding:12px 15px;font-size:13.5px;font-weight:500;margin-top:16px}
+.modal-bg{position:fixed;inset:0;background:rgba(44,39,34,.45);backdrop-filter:blur(3px);display:grid;place-items:center;z-index:50;padding:24px}.modal{background:var(--card);border-radius:22px;max-width:780px;width:100%;max-height:86vh;overflow:auto;padding:30px 32px;box-shadow:var(--shadow)}.modal h2{font-family:'Comfortaa';font-size:24px;margin:0 0 4px}.modal p,.modal ol{color:var(--ink2);font-size:14px;line-height:1.6}.modal ol{line-height:1.7;padding-left:20px}
+pre{background:#2a241d;color:#e8e0d0;border-radius:14px;padding:16px;overflow:auto;font-size:12px;line-height:1.5;font-family:ui-monospace,Menlo,monospace}.modal-x{float:right;border:none;background:var(--line);width:34px;height:34px;border-radius:10px;font-size:18px;color:var(--ink2)}
+#dash{padding:20px clamp(12px,3vw,36px) 48px;max-width:1500px;margin:0 auto}.topbar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px}.topbar .logo{width:44px;height:44px;border-radius:12px}.topbar .logo span{font-size:18px}.topbar h1{font-family:'Comfortaa';font-size:22px;margin:0;font-weight:700}.topbar .sub{font-size:10px;letter-spacing:.16em;color:var(--muted);font-weight:700;text-transform:uppercase}.topbar .spacer{flex:1}.period-chip{background:var(--card);border:1px solid var(--line2);border-radius:10px;padding:7px 13px;font-size:12px;font-weight:600;color:var(--ink2);box-shadow:var(--shadow-s);white-space:nowrap}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}@media(max-width:1000px){.kpis{grid-template-columns:repeat(2,1fr)}}.kpi{background:var(--card);border-radius:14px;padding:14px 16px 13px;box-shadow:var(--shadow-s);border:1px solid rgba(255,255,255,.6);position:relative;overflow:hidden;min-width:0}.kpi .k-l{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kpi .k-v{font-size:23px;font-weight:800;margin-top:5px;letter-spacing:-.3px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kpi .k-s{font-size:11px;color:var(--muted);margin-top:2px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kpi .bar{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--gold)}.kpi.accent .bar{background:var(--terra)}.kpi.accent .k-v{color:var(--terra)}.kpi.pos .bar{background:var(--sage)}.kpi.pos .k-v{color:var(--sage)}.kpi.profit .bar{background:var(--teal)}.kpi.profit .k-v{color:var(--teal)}
+.panel{background:var(--card);border-radius:18px;padding:18px 20px;box-shadow:var(--shadow-s);border:1px solid rgba(255,255,255,.6);margin-bottom:16px}.panel h3{font-family:'Comfortaa';font-size:16px;margin:0 0 13px;font-weight:600}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}.chartbox{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:13px 13px 6px}.chartbox .ct{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}.chartwrap{position:relative;height:230px}.chartwrap.tall{height:300px}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:620px}table{border-collapse:collapse;width:100%;font-size:11.5px;font-variant-numeric:tabular-nums}thead th{position:sticky;top:0;background:#f1ece2;color:var(--ink2);font-weight:700;font-size:10px;letter-spacing:.04em;text-transform:uppercase;text-align:right;padding:9px 10px;white-space:nowrap;cursor:pointer;border-bottom:2px solid var(--line2);z-index:2;user-select:none}thead th.l{text-align:left}thead th:hover{color:var(--gold2)}tbody td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;font-size:11.5px}tbody td.l{text-align:left}tbody tr{cursor:pointer}tbody tr:hover{background:#f6f1e8}tbody tr.sel{background:#eef2e9}.art-cell{font-weight:700;color:var(--ink)}.neg{color:var(--rust);font-weight:700}.posv{color:var(--sage);font-weight:700}.zero{color:var(--faint)}
+.flag{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:5px;vertical-align:middle;letter-spacing:.03em}.flag.over{background:#f3e7df;color:#a85a3a}.flag.plan{background:#e8e2d6;color:#7d7259}.flag.nocost{background:#f1e7d2;color:#9c7f4b}.flag.nomatch{background:#f6ddd6;color:#b8553f}
 tfoot td{position:sticky;bottom:0;background:#ede6d9;font-weight:800;padding:9px 10px;border-top:2px solid var(--line2);text-align:right;font-size:11.5px;white-space:nowrap}tfoot td.l{text-align:left}
-#loader{position:fixed;inset:0;background:rgba(246,242,234,.92);backdrop-filter:blur(4px);display:none;place-items:center;z-index:60}#loader.on{display:grid}
-.loadcard{text-align:center}
-.spin{width:54px;height:54px;border-radius:50%;border:4px solid var(--line2);border-top-color:var(--gold);margin:0 auto 18px;animation:sp 1s linear infinite}
-@keyframes sp{to{transform:rotate(360deg)}}
-#loadlog{font-size:13px;color:var(--ink2);font-weight:600;max-width:420px;text-align:left}
-#loadlog .step{opacity:.5;margin:3px 0}#loadlog .step.now{opacity:1;color:var(--ink)}#loadlog .step.done{opacity:.7}#loadlog .step.done:before{content:"✓ ";color:var(--green)}#loadlog .step.warn{color:var(--terra);opacity:1}
+#loader{position:fixed;inset:0;background:rgba(246,242,234,.92);backdrop-filter:blur(4px);display:none;place-items:center;z-index:60}#loader.on{display:grid}.loadcard{text-align:center}.spin{width:54px;height:54px;border-radius:50%;border:4px solid var(--line2);border-top-color:var(--gold);margin:0 auto 18px;animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}#loadlog{font-size:13px;color:var(--ink2);font-weight:600;max-width:420px;text-align:left}#loadlog .step{opacity:.5;margin:3px 0}#loadlog .step.now{opacity:1;color:var(--ink)}#loadlog .step.done{opacity:.7}#loadlog .step.done:before{content:"✓ ";color:var(--green)}#loadlog .step.warn{color:var(--terra);opacity:1}
 @media(max-width:560px){.card{padding:28px 22px}.head h1{font-size:28px}.row2,.row3{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-
-<section id="config">
-  <div class="card">
-    <div class="head">
-      <div class="logo"><span>Ef</span></div>
-      <div><h1>EasyForm</h1><div class="sub">Эффект интеграций с блогерами</div></div>
-    </div>
-    <div class="pill"><span class="dot"></span><span>Два кабинета · заказы через Cloudflare Worker прокси</span></div>
-
-    <div class="row2 mt">
-      <div>
-        <label class="label">API токен · кабинет EF</label>
-        <input id="tokenEF" class="fld token" type="password" placeholder="eyJhbGciOi… (EF)" autocomplete="off">
-      </div>
-      <div>
-        <label class="label">API токен · кабинет EZFR</label>
-        <input id="tokenEZFR" class="fld token" type="password" placeholder="eyJhbGciOi… (EZFR)" autocomplete="off">
-      </div>
-    </div>
-    <div class="hint">Нужна категория <b>Статистика</b> (читаем заказы). Можно заполнить один или оба. Токены хранятся только в браузере.</div>
-
-    <div class="mt">
-      <label class="label">URL прокси (Cloudflare Worker)</label>
-      <input id="proxy" class="fld" type="text" value="https://wb-proxy-worker.ooo6311ooo.workers.dev" placeholder="https://wb-proxy.xxxxx.workers.dev">
-      <div class="hint">Нет прокси? <a href="#" id="openProxyHelp">Создай бесплатно на Cloudflare</a></div>
-    </div>
-
-    <div class="mt">
-      <label class="label">Реестр интеграций (ссылка CSV)</label>
-      <input id="registry" class="fld" type="text" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTs43-3mMJEK4Nw566u_0LCPAP7K9T4WkVMGDF_ykrCKjB-7bKzD61exZDaEdob3SfAu1KXcX-oe_Y2/pub?gid=997137566&single=true&output=csv">
-      <div class="hint">Колонки: <b>Блогер</b>, <b>Дата интеграции</b>, <b>Артикулы</b> (корни через запятую), <b>Цена</b>.</div>
-    </div>
-
-    <div class="mt">
-      <label class="label">Отчёт ВБ №2 — исторические заказы (ссылка CSV)</label>
-      <input id="report" class="fld" type="text" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vRHmDOfUKYgGrjZl6iocQ-gkkXET4_Ts7fw7dYIBB9_nGk-_KCU8pjnFoawiqbjZEZBHTgtJubJm3lT/pub?gid=1646776592&single=true&output=csv">
-      <div class="hint">API отдаёт заказы ~90 дней. Для 2025 года берутся из этого отчёта (даты, которые API не покрыл).</div>
-    </div>
-
-    <div class="mt">
-      <label class="label">Таблица себестоимости (прибыль + выкуп)</label>
-      <input id="cost" class="fld" type="text" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQZuc_t740K_yF5Nhw3saPZcbyxchMhJ93WrS05BbLY9OqqXtj3y5xG6WaraGsI4Z7SmNTHFyBlNTcn/pub?gid=0&single=true&output=csv">
-      <div class="hint"><b>supplierArticle</b>, <b>Прибыль до рекламы</b>, опц. <b>Выкупаемость</b>.</div>
-    </div>
-
-    <div class="row3 mt">
-      <div><label class="label">База до, дней</label><input id="baseDays" class="fld" type="number" min="1" max="14" value="3"></div>
-      <div><label class="label">Эффект после, дней</label><input id="effDays" class="fld" type="number" min="0" max="14" value="3"></div>
-      <div><label class="label">Выкуп по умолч., %</label><input id="buyout" class="fld" type="number" min="1" max="100" value="100"></div>
-    </div>
-    <div class="hint">Считаются все заказы (включая отменённые) × выкупаемость из таблицы.</div>
-
-    <button id="load" class="btn-primary mt">Построить отчёт</button>
-    <div id="cfgErr" class="err hidden"></div>
+<section id="config"><div class="card">
+  <div class="head"><div class="logo"><span>Ef</span></div><div><h1>EasyForm</h1><div class="sub">Эффект интеграций с блогерами</div></div></div>
+  <div class="pill"><span class="dot"></span><span>Два кабинета · заказы через Cloudflare Worker прокси</span></div>
+  <div class="row2 mt"><div><label class="label">API токен · кабинет EF</label><input id="tokenEF" class="fld token" type="password" placeholder="eyJhbGciOi… (EF)" autocomplete="off"></div><div><label class="label">API токен · кабинет EZFR</label><input id="tokenEZFR" class="fld token" type="password" placeholder="eyJhbGciOi… (EZFR)" autocomplete="off"></div></div>
+  <div class="hint">Категория <b>Статистика</b>. Можно один или оба. Хранятся в браузере.</div>
+  <div class="mt"><label class="label">URL прокси</label><input id="proxy" class="fld" type="text" value="https://wb-proxy-worker.ooo6311ooo.workers.dev"><div class="hint">Нет прокси? <a href="#" id="openProxyHelp">Создай на Cloudflare</a></div></div>
+  <div class="mt"><label class="label">Реестр интеграций (CSV)</label><input id="registry" class="fld" type="text" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTs43-3mMJEK4Nw566u_0LCPAP7K9T4WkVMGDF_ykrCKjB-7bKzD61exZDaEdob3SfAu1KXcX-oe_Y2/pub?gid=997137566&single=true&output=csv"></div>
+  <div class="mt"><label class="label">Отчёт ВБ №2 — история заказов (CSV)</label><input id="report" class="fld" type="text" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vRHmDOfUKYgGrjZl6iocQ-gkkXET4_Ts7fw7dYIBB9_nGk-_KCU8pjnFoawiqbjZEZBHTgtJubJm3lT/pub?gid=1646776592&single=true&output=csv"><div class="hint">API ~90 дней, для 2025 — из отчёта.</div></div>
+  <div class="mt"><label class="label">Себестоимость (CSV)</label><input id="cost" class="fld" type="text" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQZuc_t740K_yF5Nhw3saPZcbyxchMhJ93WrS05BbLY9OqqXtj3y5xG6WaraGsI4Z7SmNTHFyBlNTcn/pub?gid=0&single=true&output=csv"></div>
+  <div class="row3 mt">
+    <div><label class="label">База ДО интеграции, дн</label><input id="baseDays" class="fld" type="number" min="1" max="14" value="3"></div>
+    <div><label class="label">Эффект ПОСЛЕ (+ день интегр.)</label><input id="effDays" class="fld" type="number" min="0" max="14" value="3"></div>
+    <div><label class="label">Выкуп по умолч., %</label><input id="buyout" class="fld" type="number" min="1" max="100" value="100"></div>
   </div>
-</section>
+  <div class="hint">База = среднее за N дней до. Эффект = день интеграции + M дней после (итого M+1 дней). Все заказы × выкупаемость.</div>
+  <button id="load" class="btn-primary mt">Построить отчёт</button>
+  <div id="cfgErr" class="err hidden"></div>
+</div></section>
 
 <section id="dash" class="hidden">
-  <div class="topbar">
-    <div class="logo"><span>Ef</span></div>
-    <div><h1>EasyForm</h1><div class="sub">Эффект интеграций · EF + EZFR</div></div>
-    <div class="spacer"></div>
-    <div class="period-chip" id="periodChip"></div>
-    <button class="btn-ghost" id="reloadBtn">Обновить</button>
-    <button class="btn-ghost" id="backBtn">Изменить</button>
-  </div>
-  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap" id="periodBtns">
-    <button class="btn-ghost prd-btn" data-p="all">За всё время</button>
-    <button class="btn-ghost prd-btn" data-p="year">В этом году</button>
-    <button class="btn-ghost prd-btn" data-p="3m">За 3 месяца</button>
-  </div>
+  <div class="topbar"><div class="logo"><span>Ef</span></div><div><h1>EasyForm</h1><div class="sub">Эффект интеграций · EF + EZFR</div></div><div class="spacer"></div><div class="period-chip" id="periodChip"></div><button class="btn-ghost" id="reloadBtn">Обновить</button><button class="btn-ghost" id="backBtn">Изменить</button></div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap"><button class="btn-ghost prd-btn" data-p="all">За всё время</button><button class="btn-ghost prd-btn" data-p="year">В этом году</button><button class="btn-ghost prd-btn" data-p="3m">За 3 месяца</button></div>
   <div class="kpis" id="kpis"></div>
+
   <div class="panel"><h3>Интеграции по месяцам</h3><div class="charts">
-    <div class="chartbox"><div class="ct">Количество · бюджет, ₽</div><div class="chartwrap"><canvas id="cMonths"></canvas></div></div>
-    <div class="chartbox"><div class="ct">Экстра-выручка vs бюджет, ₽</div><div class="chartwrap"><canvas id="cMoney"></canvas></div></div>
+    <div class="chartbox"><div class="ct">Количество · бюджет</div><div class="chartwrap"><canvas id="cMonths"></canvas></div></div>
+    <div class="chartbox"><div class="ct">Экстра-выручка vs бюджет</div><div class="chartwrap"><canvas id="cMoney"></canvas></div></div>
   </div></div>
   <div class="panel"><h3>Эффект каждой интеграции</h3><div class="charts">
-    <div class="chartbox"><div class="ct">Чистый итог (финрез − бюджет), ₽</div><div class="chartwrap tall"><canvas id="cNet"></canvas></div></div>
-    <div class="chartbox"><div class="ct">Экстра штук (сверх базы)</div><div class="chartwrap tall"><canvas id="cUnits"></canvas></div></div>
+    <div class="chartbox"><div class="ct">Чистый итог (финрез − бюджет)</div><div class="chartwrap tall"><canvas id="cNet"></canvas></div></div>
+    <div class="chartbox"><div class="ct">Экстра штук</div><div class="chartwrap tall"><canvas id="cUnits"></canvas></div></div>
   </div></div>
+
+  <div class="panel"><h3>Сводка по блогерам</h3>
+    <div class="tablewrap"><table><thead><tr><th class="l">Блогер</th><th>Интегр.</th><th>Бюджет</th><th>Экстра шт</th><th>Экстра ₽</th><th>Финрез.</th><th>Чистый</th><th>Возврат</th></tr></thead><tbody id="tbBlog"></tbody></table></div>
+  </div>
+
   <div class="panel hidden" id="drillPanel"><h3 id="drillTitle">Заказы вокруг даты</h3>
     <div class="chartbox"><div class="ct" id="drillSub"></div><div class="chartwrap"><canvas id="cDrill"></canvas></div></div>
+    <div id="drillArts" class="tablewrap" style="margin-top:12px"></div>
   </div>
+
   <div class="panel"><h3>Детализация по интеграциям</h3>
     <div class="tablewrap"><table id="tbl"><thead><tr>
-      <th class="l" data-k="date">Дата</th><th class="l" data-k="blogger">Блогер</th>
-      <th class="l" data-k="rootsRaw">Артикулы</th><th data-k="price">Цена</th>
-      <th data-k="baseUnitsDay">База/день</th><th data-k="winUnits" id="thEff">Эффект 4д</th>
-      <th data-k="extraUnits">Экстра шт</th><th data-k="extraRev">Экстра ₽</th>
-      <th data-k="buyout">Выкуп</th><th data-k="profitUnit">Приб/шт</th>
+      <th class="l" data-k="date">Дата</th><th class="l" data-k="blogger">Блогер</th><th class="l" data-k="rootsRaw">Артикулы</th><th data-k="price">Цена</th>
+      <th data-k="baseUnitsDay" id="thBase">База/день</th><th data-k="winUnits" id="thEff">Эффект 4д</th>
+      <th data-k="extraUnits">Экстра шт</th><th data-k="extraRev">Экстра ₽</th><th data-k="buyout">Выкуп</th><th data-k="profitUnit">Приб/шт</th>
       <th data-k="financial">Финрез.</th><th data-k="net">Чистый итог</th><th data-k="roi">Возврат</th>
     </tr></thead><tbody id="tbody"></tbody><tfoot id="tfoot"></tfoot></table></div>
-    <div class="hint" style="margin-top:10px">
-      Все заказы (вкл. отменённые) × выкупаемость из таблицы. Экстра = заказы за дни эффекта − (база × дни).
-      Финрез = экстра × выкуп × приб/шт. Чистый = финрез − цена. Клик по строке → график.
-      Флаги: <span class="flag over">пересеч.</span> · <span class="flag nocost">нет с/с</span> · <span class="flag nomatch">0 матчей</span> (наведи — покажет корни и примеры артикулов) · <span class="flag plan">план</span>
-    </div>
+    <div class="hint" style="margin-top:10px">База = среднее за N дней ДО интеграции. Эффект = день интеграции + M дней после. Клик → артикулы.</div>
+  </div>
+
+  <div class="panel"><h3>Сводка по артикулам</h3>
+    <div class="tablewrap"><table><thead><tr><th class="l">Артикул</th><th>Рекламировали раз</th><th>Экстра шт</th><th>Доля бюджета</th><th>Финрез.</th><th>Чистый</th></tr></thead><tbody id="tbArt"></tbody></table></div>
   </div>
 </section>
 
 <div id="loader"><div class="loadcard"><div class="spin"></div><div id="loadlog"></div></div></div>
-
-<div id="proxyHelp" class="modal-bg hidden"><div class="modal">
-  <button class="modal-x" id="closeProxyHelp">×</button>
-  <h2 class="brandfont">Бесплатный прокси за 3 минуты</h2>
-  <p>Браузер не может обращаться к WB API напрямую (нет CORS). Cloudflare Worker бесплатен до 100 000 запросов/день.</p>
-  <ol><li>Откройте <a href="https://dash.cloudflare.com/" target="_blank">dash.cloudflare.com</a> → Workers → Create → Worker.</li>
-    <li>Удалите шаблон, вставьте код ниже, Deploy.</li>
-    <li>Скопируйте URL вида <code>https://wb-proxy.…workers.dev</code>.</li></ol>
-  <pre id="workerCode">загрузка…</pre>
-  <button class="btn-ghost" id="copyWorker">Скопировать код воркера</button>
-</div></div>
-
+<div id="proxyHelp" class="modal-bg hidden"><div class="modal"><button class="modal-x" id="closeProxyHelp">×</button><h2 class="brandfont">Бесплатный прокси</h2><p>Cloudflare Worker бесплатен.</p><ol><li><a href="https://dash.cloudflare.com/" target="_blank">dash.cloudflare.com</a> → Workers → Create.</li><li>Вставьте код ниже, Deploy.</li></ol><pre id="workerCode">загрузка…</pre><button class="btn-ghost" id="copyWorker">Скопировать</button></div></div>
 <script>
 const $=s=>document.querySelector(s);
 const WB_STAT="https://statistics-api.wildberries.ru";
 const state={tokenEF:"",tokenEZFR:"",proxy:"",registry:"",cost:"",report:"",baseDays:3,effDays:3,buyout:100,priceField:"finishedPrice",computed:null};
-const charts={};
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-
-function saveCfg(){try{localStorage.setItem("ef_int_cfg2",JSON.stringify({
-  proxy:state.proxy,registry:state.registry,cost:state.cost,report:state.report,
-  baseDays:state.baseDays,effDays:state.effDays,buyout:state.buyout,priceField:state.priceField
-}));}catch(e){}}
-function loadCfg(){try{const c=JSON.parse(localStorage.getItem("ef_int_cfg2")||"{}");
-  if(c.proxy)$("#proxy").value=c.proxy;if(c.registry)$("#registry").value=c.registry;
-  if(c.cost)$("#cost").value=c.cost;if(c.report)$("#report").value=c.report;
-  if(c.baseDays)$("#baseDays").value=c.baseDays;if(c.effDays!=null)$("#effDays").value=c.effDays;
-  if(c.buyout)$("#buyout").value=c.buyout;
-}catch(e){}}
-
+const charts={};const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function saveCfg(){try{localStorage.setItem("ef_int_cfg2",JSON.stringify({proxy:state.proxy,registry:state.registry,cost:state.cost,report:state.report,baseDays:state.baseDays,effDays:state.effDays,buyout:state.buyout}));}catch(e){}}
+function loadCfg(){try{const c=JSON.parse(localStorage.getItem("ef_int_cfg2")||"{}");if(c.proxy)$("#proxy").value=c.proxy;if(c.registry)$("#registry").value=c.registry;if(c.cost)$("#cost").value=c.cost;if(c.report)$("#report").value=c.report;if(c.baseDays)$("#baseDays").value=c.baseDays;if(c.effDays!=null)$("#effDays").value=c.effDays;if(c.buyout)$("#buyout").value=c.buyout;}catch(e){}}
 function proxyUrl(t){return state.proxy.replace(/\/+$/,"")+"/"+t;}
-async function wb(target,token){
-  const headers={};const t=(token||"").trim();if(t)headers["Authorization"]=t;
-  const res=await fetch(proxyUrl(target),{headers});
-  if(res.status===429){
-    const hdr=res.headers.get('Retry-After')||res.headers.get('X-Ratelimit-Retry');
-    const wait=hdr?Math.min(parseInt(hdr,10)||20,120):20;
-    addLog(`429 — лимит WB, жду ${wait}с…`,'warn');await sleep(wait*1000);return wb(target,token);
-  }
-  const text=await res.text();
-  if(!res.ok){let m=text.slice(0,200);
-    if(res.status===401)m="401 — токен недействителен или нет категории «Статистика».";
-    if(res.status===403)m="403 — прокси отклонил хост.";
-    throw new Error(m||("HTTP "+res.status));}
-  try{return JSON.parse(text);}catch(e){return text;}
-}
-
-let steps=[];
-function setSteps(a){steps=a.map(t=>({t,s:"wait"}));renderLog();}
-function stepNow(i){steps.forEach((s,j)=>s.s=j<i?"done":(j===i?"now":"wait"));renderLog();}
-function addLog(t,cls){steps.push({t,s:cls||"now"});renderLog();}
-function stepsDone(){steps.forEach(s=>{if(s.s!=="warn")s.s="done";});renderLog();}
-function renderLog(){$("#loadlog").innerHTML=steps.map(s=>`<div class="step ${s.s}">${s.t}</div>`).join("");}
-
+async function wb(target,token){const headers={};const t=(token||"").trim();if(t)headers["Authorization"]=t;const res=await fetch(proxyUrl(target),{headers});if(res.status===429){const hdr=res.headers.get('Retry-After');const wait=hdr?Math.min(parseInt(hdr,10)||20,120):20;addLog(`429 — жду ${wait}с…`,'warn');await sleep(wait*1000);return wb(target,token);}const text=await res.text();if(!res.ok){let m=text.slice(0,200);if(res.status===401)m="401 — токен недействителен.";if(res.status===403)m="403 — прокси отклонил.";throw new Error(m||("HTTP "+res.status));}try{return JSON.parse(text);}catch(e){return text;}}
+let steps=[];function setSteps(a){steps=a.map(t=>({t,s:"wait"}));renderLog();}function stepNow(i){steps.forEach((s,j)=>s.s=j<i?"done":(j===i?"now":"wait"));renderLog();}function addLog(t,cls){steps.push({t,s:cls||"now"});renderLog();}function stepsDone(){steps.forEach(s=>{if(s.s!=="warn")s.s="done";});renderLog();}function renderLog(){$("#loadlog").innerHTML=steps.map(s=>`<div class="step ${s.s}">${s.t}</div>`).join("");}
 function norm(s){return(s==null?"":String(s)).trim();}
 function normArt(s){return String(s||"").toLowerCase().trim();}
 function costKey(s){return String(s||"").toLowerCase().trim();}
 function dateOnly(s){return(s||"").slice(0,10);}
 function parseNum(v){if(v==null)return null;const s=String(v).replace(/\s/g,"").replace(",",".");const n=parseFloat(s.replace(/[^0-9.\-]/g,""));return isNaN(n)?null:n;}
-function parseDate(s){
-  s=norm(s);if(!s)return null;
-  let m=s.match(/^(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})/);
-  if(m)return`${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
-  m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return m[0];
-  m=s.match(/^(\d{4})(\d{2})(\d{2})/);if(m)return`${m[1]}-${m[2]}-${m[3]}`;
-  return null;
-}
+function parseDate(s){s=norm(s);if(!s)return null;let m=s.match(/^(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})/);if(m)return`${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return m[0];return null;}
 function fmtDate(s){if(!s)return"";const[y,m,d]=s.split("-");return`${d}.${m}.${y}`;}
 function addDays(iso,n){const d=new Date(iso+"T00:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
 function*dayRange(a,b){let d=new Date(a+"T00:00:00");const e=new Date(b+"T00:00:00");while(d<=e){yield d.toISOString().slice(0,10);d.setDate(d.getDate()+1);}}
 function todayISO(){return new Date().toISOString().slice(0,10);}
-
-function tableRows(text,delim){const out=[];let row=[],cur="",q=false;
-  for(let i=0;i<text.length;i++){const c=text[i];
-    if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}
-    else{if(c==='"')q=true;else if(c===delim){row.push(cur);cur="";}
-      else if(c==='\n'){row.push(cur);out.push(row);row=[];cur="";}
-      else if(c==='\r'){}else cur+=c;}}
-  if(cur.length||row.length){row.push(cur);out.push(row);}
-  return out.filter(r=>r.length>1||(r[0]&&r[0].trim()));}
+function tableRows(text,delim){const out=[];let row=[],cur="",q=false;for(let i=0;i<text.length;i++){const c=text[i];if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}else{if(c==='"')q=true;else if(c===delim){row.push(cur);cur="";}else if(c==='\n'){row.push(cur);out.push(row);row=[];cur="";}else if(c==='\r'){}else cur+=c;}}if(cur.length||row.length){row.push(cur);out.push(row);}return out.filter(r=>r.length>1||(r[0]&&r[0].trim()));}
 function detectDelim(text){const f=text.split("\n")[0]||"";return f.indexOf("\t")>=0?"\t":(f.indexOf(";")>=0&&f.indexOf(",")<0?";":",");}
-async function fetchSheet(url){url=url.trim();if(!url)return null;
-  if(/\/edit/.test(url)&&!/output=(csv|tsv)|format=(csv|tsv)/.test(url)){
-    const m=url.match(/\/d\/([^/]+)/);const gid=(url.match(/gid=(\d+)/)||[])[1]||"0";
-    if(m)url=`https://docs.google.com/spreadsheets/d/${m[1]}/export?format=csv&gid=${gid}`;}
-  const r=await fetch(url);if(!r.ok)throw new Error("HTTP "+r.status+" при чтении таблицы");return await r.text();}
-
-function parseRegistry(text){
-  const rows=tableRows(text,detectDelim(text));if(!rows.length)throw new Error("Реестр пуст.");
-  const head=rows[0].map(h=>h.toLowerCase().trim());
-  const col=preds=>head.findIndex(h=>preds.some(p=>h.includes(p)));
-  const cB=col(["блогер","blogger"]),cD=col(["дата"]),cA=col(["артикул","article"]),cP=col(["цена","price"]);
-  const cL=col(["лайк","like"]),cC=col(["комент","коммент","comment"]),cR=col(["репост","repost","share"]);
-  if(cD<0||cA<0)throw new Error("В реестре нет колонок «Дата» и/или «Артикулы». Колонки: "+head.join(", "));
-  const out=[];
-  for(let i=1;i<rows.length;i++){const r=rows[i];if(!r)continue;
-    const date=parseDate(r[cD]);if(!date)continue;
-    const rootsRaw=norm(cA>=0?r[cA]:"");
-    const roots=rootsRaw.split(/[,;\n]/).map(x=>normArt(x)).filter(x=>x.length>=2);
-    out.push({blogger:norm(cB>=0?r[cB]:""),date,rootsRaw,roots,
-      price:cP>=0?parseNum(r[cP]):null,
-      likes:cL>=0?parseNum(r[cL]):null,comments:cC>=0?parseNum(r[cC]):null,reposts:cR>=0?parseNum(r[cR]):null});}
-  out.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
-  return out;
-}
-
-function parseCost(text){
-  const rows=tableRows(text,detectDelim(text));if(!rows.length)return{map:{},hasBuyout:false};
-  const head=rows[0].map(h=>h.toLowerCase().trim());
-  const col=preds=>head.findIndex(h=>preds.some(p=>h.includes(p)));
-  const cA=col(["supplierarticle","артикул продавца","артикул","article"]);
-  const cP=col(["прибыль до рекл","прибыль до","profit","прибыль"]);
-  const cBraw=col(["выкуп","buyout"]);
-  const map={};let hasBuyout=false;
-  for(let i=1;i<rows.length;i++){const r=rows[i];if(!r||cA<0)continue;
-    const raw=norm(r[cA]);if(!raw)continue;
-    const profit=cP>=0?(parseNum(r[cP])||0):0;
-    let buyout=null;if(cBraw>=0){const b=parseNum(r[cBraw]);if(b!=null){buyout=b>1.5?b/100:b;hasBuyout=true;}}
-    const rec={profit,buyout};
-    const semi=raw.indexOf(";");const baseRaw=semi>=0?raw.slice(0,semi):raw;
-    map[costKey(raw)]=rec;
-    if(!map[costKey(baseRaw)])map[costKey(baseRaw)]=rec;
-  }
-  return{map,hasBuyout};
-}
-
-function parseReport(text){
-  const rows=tableRows(text,detectDelim(text));if(rows.length<2)return{rows:[],head:[],err:"пустой файл"};
-  const head=rows[0].map(h=>h.toLowerCase().trim());
-  // pivot table detection
-  if(head.some(h=>h.includes("названия строк")||h.includes("сумма по полю")))
-    return{rows:[],head,err:`похоже на пивот-таблицу, нужен лист с сырыми данными. Заголовки: ${head.join(" | ")}`};
-  const col=preds=>head.findIndex(h=>preds.some(p=>h.includes(p)));
-  // colP: priority by predicate order (not by column position)
-  const colP=preds=>{for(const p of preds){const i=head.findIndex(h=>h.includes(p));if(i>=0)return i;}return-1;};
-  const cD=col(["день","дата заказа","дата продаж","дата отправ","date_sale","дата","date"]);
-  const cA=col(["артикул поставщика","артикул продавца","sa_name","supplierarticle","артикул","article"]);
-  // price: prefer "сумма заказ" (gross order value) over "к перечислению" (net)
-  const cP=colP(["сумма заказ","сумма зак","вайлдберриз реализ","к перечислению","цена со скид","retail_amount","розничная","retail","ppvz","сумма","цена","price","amount"]);
-  // qty: prefer "заказ" (orders) over "выкупил" (buybacks) — we multiply by buyout rate separately
-  let cQ=head.findIndex(h=>h.includes("заказ")&&!h.includes("сумма"));
-  if(cQ<0)cQ=colP(["выкупил","кол-во","количество","qty","quantity"]);
-  if(cD<0||cA<0)return{rows:[],head,err:`не нашёл колонки даты или артикула. Заголовки: ${head.slice(0,15).join(" | ")}`};
-  const colInfo=`дата[${cD}]=${head[cD]||"?"}, арт[${cA}]=${head[cA]||"?"}, цена[${cP}]=${head[cP]||"?"}, кол-во[${cQ}]=${head[cQ]||"нет"}`;
-  const out=[];let skippedDates=0;
-  for(let i=1;i<rows.length;i++){const r=rows[i];if(!r)continue;
-    const date=parseDate(r[cD]);if(!date){skippedDates++;continue;}
-    const art=norm(r[cA]);if(!art)continue;
-    const qty=cQ>=0?(parseNum(r[cQ])||1):1;
-    const rev=cP>=0?(parseNum(r[cP])||0):0;
-    for(let q=0;q<Math.max(1,Math.round(qty));q++) out.push({date,art,rev:rev/Math.max(1,qty)});}
-  if(out.length===0&&skippedDates>10)
-    return{rows:out,head,err:`${skippedDates} строк не распарсили дату. Пример: "${norm(rows[1]?.[cD]||"")}". Заголовки: ${head.slice(0,10).join(" | ")}`,colInfo};
-  return{rows:out,head,colInfo};
-}
-
-async function fetchOrders(fromISO,token){
-  let from=fromISO+"T00:00:00";const seen=new Set();const all=[];let guard=0;
-  while(guard++<80){
-    const b=await wb(WB_STAT+`/api/v1/supplier/orders?dateFrom=${encodeURIComponent(from)}&flag=0`,token);
-    if(!Array.isArray(b)||b.length===0)break;
-    for(const o of b){const id=o.srid||(o.date+"|"+o.supplierArticle+"|"+o.barcode+"|"+(o.odid||o.nmId));if(!seen.has(id)){seen.add(id);all.push(o);}}
-    addLog(`  заказы: ${all.length}…`,"now");
-    if(b.length<80000)break;
-    const lc=b[b.length-1].lastChangeDate;if(!lc||lc===from)break;from=lc;await sleep(400);
-  }
-  return all;
-}
+async function fetchSheet(url){url=url.trim();if(!url)return null;if(/\/edit/.test(url)&&!/output=(csv|tsv)|format=(csv|tsv)/.test(url)){const m=url.match(/\/d\/([^/]+)/);const gid=(url.match(/gid=(\d+)/)||[])[1]||"0";if(m)url=`https://docs.google.com/spreadsheets/d/${m[1]}/export?format=csv&gid=${gid}`;}const r=await fetch(url);if(!r.ok)throw new Error("HTTP "+r.status);return await r.text();}
+function parseRegistry(text){const rows=tableRows(text,detectDelim(text));if(!rows.length)throw new Error("Реестр пуст.");const head=rows[0].map(h=>h.toLowerCase().trim());const col=preds=>head.findIndex(h=>preds.some(p=>h.includes(p)));const cB=col(["блогер","blogger"]),cD=col(["дата"]),cA=col(["артикул","article"]),cP=col(["цена","price"]);if(cD<0||cA<0)throw new Error("Нет колонок Дата/Артикулы: "+head.join(", "));const out=[];for(let i=1;i<rows.length;i++){const r=rows[i];if(!r)continue;const date=parseDate(r[cD]);if(!date)continue;const rootsRaw=norm(cA>=0?r[cA]:"");const roots=rootsRaw.split(/[,;\n]/).map(x=>normArt(x)).filter(x=>x.length>=2);out.push({blogger:norm(cB>=0?r[cB]:""),date,rootsRaw,roots,price:cP>=0?parseNum(r[cP]):null});}out.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);return out;}
+function parseCost(text){const rows=tableRows(text,detectDelim(text));if(!rows.length)return{map:{},hasBuyout:false};const head=rows[0].map(h=>h.toLowerCase().trim());const col=preds=>head.findIndex(h=>preds.some(p=>h.includes(p)));const cA=col(["supplierarticle","артикул продавца","артикул","article"]);const cP=col(["прибыль до рекл","прибыль до","profit","прибыль"]);const cBraw=col(["выкуп","buyout"]);const map={};let hasBuyout=false;for(let i=1;i<rows.length;i++){const r=rows[i];if(!r||cA<0)continue;const raw=norm(r[cA]);if(!raw)continue;const profit=cP>=0?(parseNum(r[cP])||0):0;let buyout=null;if(cBraw>=0){const b=parseNum(r[cBraw]);if(b!=null){buyout=b>1.5?b/100:b;hasBuyout=true;}}const rec={profit,buyout};const semi=raw.indexOf(";");const baseRaw=semi>=0?raw.slice(0,semi):raw;map[costKey(raw)]=rec;if(!map[costKey(baseRaw)])map[costKey(baseRaw)]=rec;}return{map,hasBuyout};}
+function parseReport(text){const rows=tableRows(text,detectDelim(text));if(rows.length<2)return{rows:[],head:[],err:"пустой"};const head=rows[0].map(h=>h.toLowerCase().trim());if(head.some(h=>h.includes("названия строк")||h.includes("сумма по полю")))return{rows:[],head,err:"пивот-таблица, нужны сырые данные"};const col=preds=>head.findIndex(h=>preds.some(p=>h.includes(p)));const colP=preds=>{for(const p of preds){const i=head.findIndex(h=>h.includes(p));if(i>=0)return i;}return-1;};const cD=col(["день","дата заказа","дата продаж","дата","date","day"]);const cA=col(["артикул поставщика","артикул продавца","supplierarticle","артикул","article"]);const cP=colP(["сумма заказ","сумма зак","вайлдберриз реализ","к перечислению","сумма","цена","price"]);let cQ=head.findIndex(h=>h.includes("заказ")&&!h.includes("сумма"));if(cQ<0)cQ=colP(["выкупил","кол-во","количество","qty"]);if(cD<0||cA<0)return{rows:[],head,err:`нет колонки даты/артикула. Заголовки: ${head.slice(0,10).join(" | ")}`};const out=[];let skip=0;for(let i=1;i<rows.length;i++){const r=rows[i];if(!r)continue;const date=parseDate(r[cD]);if(!date){skip++;continue;}const art=norm(r[cA]);if(!art)continue;const qty=cQ>=0?(parseNum(r[cQ])||1):1;const rev=cP>=0?(parseNum(r[cP])||0):0;for(let q=0;q<Math.max(1,Math.round(qty));q++)out.push({date,art,rev:rev/Math.max(1,qty)});}if(out.length===0&&skip>10)return{rows:out,head,err:`${skip} строк без даты. Пример: "${norm(rows[1]?.[cD]||"")}"`};return{rows:out,head};}
+async function fetchOrders(fromISO,token){let from=fromISO+"T00:00:00";const seen=new Set();const all=[];let guard=0;while(guard++<80){const b=await wb(WB_STAT+`/api/v1/supplier/orders?dateFrom=${encodeURIComponent(from)}&flag=0`,token);if(!Array.isArray(b)||b.length===0)break;for(const o of b){const id=o.srid||(o.date+"|"+o.supplierArticle+"|"+o.barcode);if(!seen.has(id)){seen.add(id);all.push(o);}}addLog(`  ${all.length}…`,"now");if(b.length<80000)break;const lc=b[b.length-1].lastChangeDate;if(!lc||lc===from)break;from=lc;await sleep(400);}return all;}
 
 async function runPipeline(){
-  setSteps(["Читаю реестр интеграций","Читаю себестоимость","Гружу заказы из WB (два кабинета)","Подключаю отчёт №2 (история)","Считаю эффект"]);
-  stepNow(0);
-  const reg=parseRegistry(await fetchSheet(state.registry));
-  if(!reg.length)throw new Error("В реестре нет интеграций с датой.");
-
-  stepNow(1);
-  let cost={map:{},hasBuyout:false};
-  try{const ct=await fetchSheet(state.cost);if(ct)cost=parseCost(ct);}
-  catch(e){addLog("Себестоимость: "+e.message,"warn");}
-
-  stepNow(2);
-  const minD=reg[0].date,maxD=reg[reg.length-1].date;
-  const globalFrom=addDays(minD,-state.baseDays-1);
-  const today=todayISO();
-  const globalTo=(addDays(maxD,state.effDays)<today?addDays(maxD,state.effDays):today);
-
-  const apiDayMap=new Map();
-  let apiMin=null,apiMax=null,apiTotal=0;
-  const cabinets=[
-    {name:"EF",token:state.tokenEF},
-    {name:"EZFR",token:state.tokenEZFR}
-  ].filter(c=>c.token.trim());
-
-  for(const cab of cabinets){
-    addLog(`Кабинет ${cab.name} — гружу заказы…`,"now");
-    try{
-      const orders=await fetchOrders(globalFrom,cab.token);
-      let added=0;
-      for(const o of orders){
-        const date=dateOnly(o.date);if(date<globalFrom||date>globalTo)continue;
-        const rev=(parseFloat(o[state.priceField])||parseFloat(o.finishedPrice)||parseFloat(o.priceWithDisc)||parseFloat(o.totalPrice)||0);
-        if(!apiDayMap.has(date))apiDayMap.set(date,[]);
-        apiDayMap.get(date).push({art:o.supplierArticle||"",rev});
-        if(apiMin===null||date<apiMin)apiMin=date;if(apiMax===null||date>apiMax)apiMax=date;
-        added++;
-      }
-      apiTotal+=added;
-      addLog(`${cab.name}: ${added} заказов, ${apiMin?fmtDate(apiMin):"-"} → ${apiMax?fmtDate(apiMax):"-"}`,"now");
-    }catch(e){addLog(`${cab.name}: ${e.message}`,"warn");}
-  }
-
-  stepNow(3);
-  const repDayMap=new Map();
-  let histAdded=0,reportRows=0;
-  if(state.report.trim()){
-    try{
-      const rawText=await fetchSheet(state.report);
-      addLog(`Отчёт: файл ${rawText.length} символов`,"now");
-      const rep=parseReport(rawText);
-      reportRows=rep.rows.length;
-      if(rep.err){addLog("Отчёт ⚠: "+rep.err,"warn");}
-      else{
-        // diagnostic: show what was found
-        const hdShort=rep.head.slice(0,8).join(" | ");
-        addLog(`Отчёт: колонки → ${hdShort}`,"now");
-        if(rep.rows.length>0){
-          const s=rep.rows[0];
-          addLog(`Отчёт: пример строки → дата: ${s.date}, арт: ${s.art}, цена: ${s.rev}`,"now");
-          // date range
-          let dMin=s.date,dMax=s.date;
-          for(const o of rep.rows){if(o.date<dMin)dMin=o.date;if(o.date>dMax)dMax=o.date;}
-          addLog(`Отчёт: даты от ${fmtDate(dMin)} до ${fmtDate(dMax)}, строк: ${rep.rows.length}`,"now");
-        }
-      }
-      for(const o of rep.rows){
-        if(o.date<globalFrom||o.date>globalTo)continue;
-        if(!repDayMap.has(o.date))repDayMap.set(o.date,[]);
-        repDayMap.get(o.date).push({art:o.art,rev:o.rev});
-        histAdded++;
-      }
-      addLog(`Отчёт: ${histAdded} заказов попало в диапазон ${fmtDate(globalFrom)}→${fmtDate(globalTo)}`,"now");
-      // diagnostic: check specific dates around 03.07.2025
-      const probe="2025-07-03";
-      const pArr=repDayMap.get(probe)||[];
-      if(pArr.length>0){
-        const sample=pArr.slice(0,5).map(o=>o.art).join(", ");
-        addLog(`Проверка ${fmtDate(probe)}: ${pArr.length} заказов, арт: ${sample}`,"now");
-      } else {
-        // check nearby dates
-        const nearby=["2025-07-01","2025-07-02","2025-07-04","2025-06-30"];
-        const found=nearby.filter(d=>repDayMap.has(d)&&repDayMap.get(d).length>0);
-        addLog(`Проверка ${fmtDate(probe)}: 0 заказов. Ближайшие с данными: ${found.map(d=>fmtDate(d)+"("+repDayMap.get(d).length+")").join(", ")||"нет"}`,"warn");
-      }
-    }catch(e){addLog("Отчёт №2: "+e.message,"warn");}
-  }
-
-  // merge: API covers last 60 days, report covers everything older
-  const dayMap=new Map();
-  const apiCutoff=addDays(todayISO(),-60);
-  const allDates=new Set([...apiDayMap.keys(),...repDayMap.keys()]);
-  let usedApi=0,usedRep=0;
-  for(const date of allDates){
-    const a=apiDayMap.get(date)||[];
-    const r=repDayMap.get(date)||[];
-    if(date>=apiCutoff&&a.length>0){dayMap.set(date,a);usedApi++;}
-    else if(r.length>0){dayMap.set(date,r);usedRep++;}
-    else if(a.length>0){dayMap.set(date,a);usedApi++;}
-  }
-  addLog(`Мердж: ${allDates.size} дней (${usedApi} API, ${usedRep} отчёт, граница ${fmtDate(apiCutoff)})`,"now");
-
-  // collect all unique arts for nomatch debugging
-  const allArts=new Set();
-  for(const arr of dayMap.values())for(const o of arr)allArts.add(o.art);
-
-  stepNow(4);
-  const res=reg.map(it=>analyze(it,dayMap,cost,today,allArts));
-  flagOverlaps(res);
-  return{integrations:res,meta:{apiTotal,histAdded,usedApi,usedRep,apiMin,apiMax,from:globalFrom,to:globalTo,costRows:Object.keys(cost.map).length,hasBuyout:cost.hasBuyout}};
+  setSteps(["Реестр","Себестоимость","Заказы WB","Отчёт №2","Расчёт"]);
+  stepNow(0);const reg=parseRegistry(await fetchSheet(state.registry));if(!reg.length)throw new Error("Нет интеграций.");
+  stepNow(1);let cost={map:{},hasBuyout:false};try{const ct=await fetchSheet(state.cost);if(ct)cost=parseCost(ct);}catch(e){addLog("С/с: "+e.message,"warn");}
+  stepNow(2);const minD=reg[0].date,maxD=reg[reg.length-1].date;const globalFrom=addDays(minD,-state.baseDays-1);const today=todayISO();const globalTo=addDays(maxD,state.effDays)<today?addDays(maxD,state.effDays):today;
+  const apiDayMap=new Map();let apiMin=null,apiMax=null,apiTotal=0;
+  const cabs=[{name:"EF",token:state.tokenEF},{name:"EZFR",token:state.tokenEZFR}].filter(c=>c.token.trim());
+  for(const cab of cabs){addLog(`${cab.name}…`,"now");try{const orders=await fetchOrders(globalFrom,cab.token);let added=0;for(const o of orders){const date=dateOnly(o.date);if(date<globalFrom||date>globalTo)continue;const rev=parseFloat(o.finishedPrice)||parseFloat(o.priceWithDisc)||parseFloat(o.totalPrice)||0;if(!apiDayMap.has(date))apiDayMap.set(date,[]);apiDayMap.get(date).push({art:o.supplierArticle||"",rev});if(apiMin===null||date<apiMin)apiMin=date;if(apiMax===null||date>apiMax)apiMax=date;added++;}apiTotal+=added;addLog(`${cab.name}: ${added} зак.`,"now");}catch(e){addLog(`${cab.name}: ${e.message}`,"warn");}}
+  stepNow(3);const repDayMap=new Map();let histAdded=0;
+  if(state.report.trim()){try{const rawText=await fetchSheet(state.report);const rep=parseReport(rawText);if(rep.err)addLog("Отчёт: "+rep.err,"warn");else addLog(`Отчёт: ${rep.rows.length} строк`,"now");for(const o of rep.rows){if(o.date<globalFrom||o.date>globalTo)continue;if(!repDayMap.has(o.date))repDayMap.set(o.date,[]);repDayMap.get(o.date).push({art:o.art,rev:o.rev});histAdded++;}addLog(`Отчёт: ${histAdded} в диапазоне`,"now");}catch(e){addLog("Отчёт: "+e.message,"warn");}}
+  const dayMap=new Map();const apiCutoff=addDays(today,-60);const allDates=new Set([...apiDayMap.keys(),...repDayMap.keys()]);let usedApi=0,usedRep=0;
+  for(const date of allDates){const a=apiDayMap.get(date)||[];const r=repDayMap.get(date)||[];if(date>=apiCutoff&&a.length>0){dayMap.set(date,a);usedApi++;}else if(r.length>0){dayMap.set(date,r);usedRep++;}else if(a.length>0){dayMap.set(date,a);usedApi++;}}
+  addLog(`Мердж: ${allDates.size} дн (${usedApi} API, ${usedRep} отчёт)`,"now");
+  stepNow(4);const res=reg.map(it=>analyze(it,dayMap,cost,today));flagOverlaps(res);
+  return{integrations:res,meta:{apiTotal,histAdded,usedApi,usedRep,from:globalFrom,to:globalTo}};
 }
 
-function analyze(it,dayMap,cost,today,allArts){
+function analyze(it,dayMap,cost,today){
   const baseDays=state.baseDays,effDays=state.effDays;
   const future=addDays(it.date,effDays)>today;
   const baseWin=[...dayRange(addDays(it.date,-baseDays),addDays(it.date,-1))];
   const effWin=[...dayRange(it.date,addDays(it.date,effDays))];
-  const matchDay=date=>{const arr=dayMap.get(date)||[];let u=0,r=0;const byArt={};
-    for(const o of arr){const na=normArt(o.art);if(it.roots.some(rt=>na.includes(rt))){u++;r+=o.rev;byArt[o.art]=(byArt[o.art]||0)+1;}}
-    return{u,r,byArt};};
-  const fullWin=[...dayRange(addDays(it.date,-baseDays),addDays(it.date,effDays))];
-  const series=fullWin.map(d=>{const m=matchDay(d);return{date:d,u:m.u,r:m.r,base:baseWin.includes(d),eff:effWin.includes(d)};});
-  let baseU=0,baseR=0,bn=0;for(const d of baseWin){const m=matchDay(d);baseU+=m.u;baseR+=m.r;bn++;}
-  const baseUnitsDay=bn?baseU/bn:0,baseRevDay=bn?baseR/bn:0;
-  let winU=0,winR=0;const winArt={};
-  for(const d of effWin){const m=matchDay(d);winU+=m.u;winR+=m.r;for(const a in m.byArt)winArt[a]=(winArt[a]||0)+m.byArt[a];}
+  const bn=baseWin.length;
+  // per-article breakdown
+  const artBase={},artEff={};
+  for(const d of baseWin){const arr=dayMap.get(d)||[];for(const o of arr){const na=normArt(o.art);if(it.roots.some(rt=>na.includes(rt))){artBase[o.art]=(artBase[o.art]||0)+1;}}}
+  for(const d of effWin){const arr=dayMap.get(d)||[];for(const o of arr){const na=normArt(o.art);if(it.roots.some(rt=>na.includes(rt))){artEff[o.art]=(artEff[o.art]||0)+1;}}}
+  const allMatchedArts=new Set([...Object.keys(artBase),...Object.keys(artEff)]);
   const effLen=effWin.length;
-  const extraUnits=winU-baseUnitsDay*effLen;
-  const extraRev=winR-baseRevDay*effLen;
-  let wProfit=0,wBuy=0,costUnits=0,totUnits=0;
-  for(const a in winArt){const u=winArt[a];totUnits+=u;const c=cost.map[costKey(a)];
-    if(c){wProfit+=c.profit*u;wBuy+=(c.buyout!=null?c.buyout:state.buyout/100)*u;costUnits+=u;}}
-  const hasCost=costUnits>0;
-  const profitUnit=hasCost?wProfit/costUnits:null;
-  const buyout=hasCost?wBuy/costUnits:(state.buyout/100);
-  const financial=(profitUnit!=null)?extraUnits*buyout*profitUnit:null;
-  const net=(financial!=null&&it.price!=null)?financial-it.price:null;
-  const roi=(financial!=null&&it.price)?financial/it.price:null;
-  const matched=totUnits>0||winU>0||baseU>0;
-  let debugHint="";
-  if(!matched&&!future){
-    const allWinDates=[...baseWin,...effWin];
-    const dateCounts=allWinDates.map(d=>{const a=dayMap.get(d)||[];return`${fmtDate(d).slice(0,5)}:${a.length}шт`;});
-    debugHint=`Корни: ${it.roots.join(", ")} | Дни: ${dateCounts.join(", ")}`;
-    // sample arts from those days
-    const sampleArts=new Set();
-    for(const d of allWinDates){const arr=dayMap.get(d)||[];for(const o of arr){sampleArts.add(o.art);if(sampleArts.size>=6)break;}if(sampleArts.size>=6)break;}
-    if(sampleArts.size>0)debugHint+=` | Артикулы в заказах: ${[...sampleArts].join(", ")}`;
-    else debugHint+=` | dayMap пуст для этих дат`;
+  const artBreakdown={};let totalBaseU=0,totalEffU=0;
+  for(const a of allMatchedArts){
+    const bU=artBase[a]||0;const eU=artEff[a]||0;
+    const bDay=bn?bU/bn:0;const extra=eU-bDay*effLen;
+    const c=cost.map[costKey(a)];
+    const bo=c&&c.buyout!=null?c.buyout:state.buyout/100;
+    const pu=c?c.profit:null;
+    artBreakdown[a]={baseTotal:bU,baseDay:bDay,effTotal:eU,extra,buyout:bo,profitUnit:pu,hasCost:!!c,financial:pu!=null?extra*bo*pu:null};
+    totalBaseU+=bU;totalEffU+=eU;
   }
-  return{...it,future,baseUnitsDay,baseRevDay,winUnits:winU,extraUnits,extraRev,
-    profitUnit,buyout,financial,net,roi,hasCost,matched,series,effLen,debugHint};
+  const baseUnitsDay=bn?totalBaseU/bn:0;
+  const extraUnits=totalEffU-baseUnitsDay*effLen;
+  // revenue
+  let baseR=0,winR=0;
+  for(const d of baseWin){const arr=dayMap.get(d)||[];for(const o of arr){const na=normArt(o.art);if(it.roots.some(rt=>na.includes(rt)))baseR+=o.rev;}}
+  for(const d of effWin){const arr=dayMap.get(d)||[];for(const o of arr){const na=normArt(o.art);if(it.roots.some(rt=>na.includes(rt)))winR+=o.rev;}}
+  const baseRevDay=bn?baseR/bn:0;const extraRev=winR-baseRevDay*effLen;
+  // aggregated cost
+  let wProfit=0,wBuy=0,costU=0;
+  for(const a of allMatchedArts){const d=artBreakdown[a];const eU=d.effTotal;if(d.hasCost&&eU>0){wProfit+=d.profitUnit*eU;wBuy+=d.buyout*eU;costU+=eU;}}
+  const hasCost=costU>0;const profitUnit=hasCost?wProfit/costU:null;const buyout=hasCost?wBuy/costU:state.buyout/100;
+  const financial=profitUnit!=null?extraUnits*buyout*profitUnit:null;
+  const net=financial!=null&&it.price!=null?financial-it.price:null;
+  const roi=financial!=null&&it.price?financial/it.price:null;
+  const matched=totalEffU>0||totalBaseU>0;
+  // series for drill chart
+  const fullWin=[...dayRange(addDays(it.date,-baseDays),addDays(it.date,effDays))];
+  const series=fullWin.map(d=>{const arr=dayMap.get(d)||[];let u=0;for(const o of arr){const na=normArt(o.art);if(it.roots.some(rt=>na.includes(rt)))u++;}return{date:d,u,base:baseWin.includes(d),eff:effWin.includes(d)};});
+  let debugHint="";
+  if(!matched&&!future){const dts=[...baseWin,...effWin];const dc=dts.map(d=>{const a=dayMap.get(d)||[];return fmtDate(d).slice(0,5)+":"+a.length;});debugHint=`Корни: ${it.roots.join(", ")} | ${dc.join(", ")}`;const sa=new Set();for(const d of dts){for(const o of (dayMap.get(d)||[]))sa.add(o.art);if(sa.size>=5)break;}if(sa.size)debugHint+=` | Арт: ${[...sa].join(", ")}`;}
+  return{...it,future,baseUnitsDay,winUnits:totalEffU,extraUnits,extraRev,profitUnit,buyout,financial,net,roi,hasCost,matched,series,effLen,artBreakdown,debugHint};
 }
+function flagOverlaps(res){const span=state.baseDays+state.effDays;for(let i=0;i<res.length;i++){res[i].overlap=false;for(let j=0;j<res.length;j++){if(i===j)continue;if(Math.abs((new Date(res[i].date)-new Date(res[j].date))/86400000)<=span){res[i].overlap=true;break;}}}}
 
-function flagOverlaps(res){
-  const span=state.baseDays+state.effDays;
-  for(let i=0;i<res.length;i++){res[i].overlap=false;
-    for(let j=0;j<res.length;j++){if(i===j)continue;
-      const diff=Math.abs((new Date(res[i].date)-new Date(res[j].date))/86400000);
-      if(diff<=span){res[i].overlap=true;break;}}}
-}
-
-const fmt=new Intl.NumberFormat("ru-RU");
-const money=v=>fmt.format(Math.round(v))+" ₽";
-const money0=v=>(v==null?'<span class="zero">—</span>':money(v));
-const num=v=>fmt.format(Math.round(v));
-
-function render(){
-  const R=filteredR();
-  $("#thEff").textContent=`Эффект ${state.effDays+1}д`;
-  updatePrdBtns();
-  renderKpis(R);renderMonths(R);renderMoney(R);renderNet(R);renderUnits(R);renderTable(R);
-}
+const fmt=new Intl.NumberFormat("ru-RU");const money=v=>fmt.format(Math.round(v))+" ₽";const money0=v=>v==null?'<span class="zero">—</span>':money(v);const num=v=>fmt.format(Math.round(v));
 let periodFilter="all";
 function periodFrom(){const t=todayISO();if(periodFilter==="year")return t.slice(0,4)+"-01-01";if(periodFilter==="3m")return addDays(t,-90);return"1900-01-01";}
 function filteredR(){const f=periodFrom();return state.computed.integrations.filter(r=>r.date>=f);}
 function updatePrdBtns(){document.querySelectorAll(".prd-btn").forEach(b=>b.classList.toggle("active",b.dataset.p===periodFilter));}
-function measured(R){return R.filter(r=>!r.future);}
-function renderKpis(R){
-  const m=measured(R);const totalInt=R.length,withEff=m.filter(r=>r.matched).length;
-  const spend=R.reduce((s,r)=>s+(r.price||0),0);
-  const xUnits=m.reduce((s,r)=>s+(r.matched?r.extraUnits:0),0);
-  const xRev=m.reduce((s,r)=>s+(r.matched?r.extraRev:0),0);
-  const fin=m.reduce((s,r)=>s+(r.financial||0),0);const net=fin-spend;
-  const roi=spend>0?fin/spend:null;
-  const k=[
-    ["Интеграций",num(totalInt),`${withEff} с замером`,""],
-    ["Бюджет",money(spend),"из реестра","accent"],
-    ["Экстра штук",num(xUnits),"сверх базы",""],
-    ["Экстра выручка",money(xRev),"сверх базы",""],
-    ["Финрезультат",money(fin),"экстра×выкуп×приб","profit"],
-    ["Чистый итог",money(net),net>=0?"в плюс":"в минус",net>=0?"pos":"accent"],
-    ["Возврат",roi!=null?roi.toFixed(2).replace(".",",")+"×":"—","финрез ÷ бюджет","profit"],
-    ["Окно",`−${state.baseDays} / +${state.effDays} дн`,"база / эффект",""],
-  ];
-  $("#kpis").innerHTML=k.map(([l,v,s,c])=>`<div class="kpi ${c}"><div class="bar"></div><div class="k-l">${l}</div><div class="k-v">${v}</div><div class="k-s">${s}</div></div>`).join("");
+function render(){
+  const R=filteredR();
+  $("#thEff").textContent=`Эффект ${state.effDays+1}д`;
+  $("#thBase").textContent=`База ${state.baseDays}д/день`;
+  updatePrdBtns();
   const mt=state.computed.meta;
-  $("#periodChip").textContent=`${fmtDate(mt.from)} → ${fmtDate(mt.to)} · ${mt.usedApi} дн. API + ${mt.usedRep} дн. отчёт`;
+  $("#periodChip").textContent=`${fmtDate(mt.from)} → ${fmtDate(mt.to)} · ${mt.usedApi} дн API + ${mt.usedRep} дн отчёт`;
+  renderKpis(R);renderMonths(R);renderMoney(R);renderNet(R);renderUnits(R);renderBloggers(R);renderTable(R);renderArticles(R);
 }
-function monthsAgg(R){const map={};
-  for(const r of R){const ym=r.date.slice(0,7);if(!map[ym])map[ym]={count:0,spend:0,xRev:0,fin:0};
-    map[ym].count++;map[ym].spend+=(r.price||0);if(!r.future){map[ym].xRev+=(r.matched?r.extraRev:0);map[ym].fin+=(r.financial||0);}}
-  const keys=Object.keys(map).sort();
-  return{keys,map,lbl:keys.map(k=>{const[y,m]=k.split("-");return`${["","янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"][+m]} ${y.slice(2)}`;})};
-}
+function measured(R){return R.filter(r=>!r.future);}
+function renderKpis(R){const m=measured(R);const spend=R.reduce((s,r)=>s+(r.price||0),0);const xU=m.reduce((s,r)=>s+(r.matched?r.extraUnits:0),0);const xR=m.reduce((s,r)=>s+(r.matched?r.extraRev:0),0);const fin=m.reduce((s,r)=>s+(r.financial||0),0);const net=fin-spend;const roi=spend>0?fin/spend:null;
+  const k=[["Интеграций",num(R.length),`${m.filter(r=>r.matched).length} с замером`,""],["Бюджет",money(spend),"","accent"],["Экстра штук",num(xU),"сверх базы",""],["Экстра выручка",money(xR),"",""],["Финрезультат",money(fin),"","profit"],["Чистый итог",money(net),net>=0?"в плюс":"в минус",net>=0?"pos":"accent"],["Возврат",roi!=null?roi.toFixed(2).replace(".",",")+"×":"—","","profit"],["Окно",`−${state.baseDays} / +${state.effDays} дн`,"база/эффект",""]];
+  $("#kpis").innerHTML=k.map(([l,v,s,c])=>`<div class="kpi ${c}"><div class="bar"></div><div class="k-l">${l}</div><div class="k-v">${v}</div><div class="k-s">${s}</div></div>`).join("");}
+
+function renderBloggers(R){
+  const map={};for(const r of R){const b=r.blogger||"—";if(!map[b])map[b]={n:0,price:0,xu:0,xr:0,fin:0};map[b].n++;map[b].price+=(r.price||0);if(!r.future&&r.matched){map[b].xu+=r.extraUnits;map[b].xr+=r.extraRev;}map[b].fin+=(r.financial||0);}
+  const rows=Object.entries(map).sort((a,b)=>b[1].n-a[1].n);
+  $("#tbBlog").innerHTML=rows.map(([b,d])=>{const net=d.fin-d.price;const roi=d.price>0?d.fin/d.price:null;return`<tr><td class="l art-cell">${esc(b)}</td><td>${d.n}</td><td>${money(d.price)}</td><td class="${d.xu>=0?'posv':'neg'}">${num(d.xu)}</td><td>${money(d.xr)}</td><td>${money(d.fin)}</td><td class="${net>=0?'posv':'neg'}">${money(net)}</td><td>${roi!=null?roi.toFixed(2).replace(".",",")+"×":"—"}</td></tr>`;}).join("");}
+
+function renderArticles(R){
+  const map={};for(const r of R){if(r.future||!r.matched)continue;const nArts=Object.keys(r.artBreakdown).length||1;const share=(r.price||0)/nArts;for(const[a,d]of Object.entries(r.artBreakdown)){if(!map[a])map[a]={n:0,xu:0,price:0,fin:0};map[a].n++;map[a].xu+=d.extra;map[a].price+=share;map[a].fin+=(d.financial||0);}}
+  const rows=Object.entries(map).sort((a,b)=>b[1].n-a[1].n);
+  $("#tbArt").innerHTML=rows.map(([a,d])=>{const net=d.fin-d.price;return`<tr><td class="l art-cell">${esc(a)}</td><td>${d.n}</td><td class="${d.xu>=0?'posv':'neg'}">${num(d.xu)}</td><td>${money(d.price)}</td><td>${money(d.fin)}</td><td class="${net>=0?'posv':'neg'}">${money(net)}</td></tr>`;}).join("");}
+
+function monthsAgg(R){const map={};for(const r of R){const ym=r.date.slice(0,7);if(!map[ym])map[ym]={count:0,spend:0,xRev:0};map[ym].count++;map[ym].spend+=(r.price||0);if(!r.future&&r.matched)map[ym].xRev+=r.extraRev;}const keys=Object.keys(map).sort();return{keys,map,lbl:keys.map(k=>{const[y,m]=k.split("-");return`${["","янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"][+m]} ${y.slice(2)}`;})};};
 const C={ink:'#2c2722',terra:'#c47150',sage:'#6f8f6a',teal:'#3a7d83',gold:'#b3955f',rust:'#b8553f',line:'#e2dacc',muted:'#9b9184'};
 function mk(id,cfg){if(charts[id])charts[id].destroy();charts[id]=new Chart($("#"+id),cfg);}
 const F={family:'Manrope',size:10};
-const baseOpts=(extra={})=>({responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-  plugins:{legend:{labels:{font:{family:'Manrope',size:11},color:C.ink,boxWidth:12,usePointStyle:true}},
-    tooltip:{titleFont:{family:'Manrope'},bodyFont:{family:'Manrope'}}},
-  scales:{x:{grid:{display:false},ticks:{font:F,color:C.muted,maxRotation:45,autoSkip:true,maxTicksLimit:14}},...extra}});
-function renderMonths(R){const a=monthsAgg(R);
-  mk("cMonths",{data:{labels:a.lbl,datasets:[
-    {type:'bar',label:'Интеграций',data:a.keys.map(k=>a.map[k].count),backgroundColor:'rgba(58,125,131,.55)',borderRadius:5,yAxisID:'y'},
-    {type:'line',label:'Бюджет, ₽',data:a.keys.map(k=>a.map[k].spend),borderColor:C.terra,backgroundColor:C.terra,tension:.35,pointRadius:3,yAxisID:'y1'}]},
-    options:baseOpts({y:{position:'left',beginAtZero:true,grid:{color:C.line},ticks:{font:F,color:C.muted,stepSize:1},title:{display:true,text:'шт',font:{size:9}}},
-      y1:{position:'right',beginAtZero:true,grid:{display:false},ticks:{font:F,color:C.muted,callback:v=>fmt.format(v)},title:{display:true,text:'₽',font:{size:9}}}})});}
-function renderMoney(R){const a=monthsAgg(R);
-  mk("cMoney",{type:'bar',data:{labels:a.lbl,datasets:[
-    {label:'Экстра-выручка',data:a.keys.map(k=>Math.round(a.map[k].xRev)),backgroundColor:'rgba(111,143,106,.65)',borderRadius:5},
-    {label:'Бюджет',data:a.keys.map(k=>Math.round(a.map[k].spend)),backgroundColor:'rgba(196,113,80,.6)',borderRadius:5}]},
-    options:baseOpts({y:{beginAtZero:true,grid:{color:C.line},ticks:{font:F,color:C.muted,callback:v=>fmt.format(v)}}})});}
-function renderNet(R){const m=measured(R).filter(r=>r.net!=null).sort((a,b)=>b.net-a.net);
-  const lbl=m.map(r=>`${r.blogger||'—'} ${fmtDate(r.date).slice(0,5)}`);
-  mk("cNet",{type:'bar',data:{labels:lbl,datasets:[{label:'Чистый итог, ₽',
-    data:m.map(r=>Math.round(r.net)),backgroundColor:m.map(r=>r.net>=0?'rgba(111,143,106,.7)':'rgba(184,85,63,.7)'),borderRadius:5}]},
-    options:{...baseOpts(),indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>money(c.raw)}}},
-      scales:{y:{grid:{display:false},ticks:{font:{family:'Manrope',size:9},color:C.muted}},
-        x:{beginAtZero:true,grid:{color:C.line},ticks:{font:F,color:C.muted,callback:v=>fmt.format(v)}}}}});}
-function renderUnits(R){const m=measured(R).filter(r=>r.matched).sort((a,b)=>b.extraUnits-a.extraUnits);
-  const lbl=m.map(r=>`${r.blogger||'—'} ${fmtDate(r.date).slice(0,5)}`);
-  mk("cUnits",{type:'bar',data:{labels:lbl,datasets:[{label:'Экстра штук',
-    data:m.map(r=>Math.round(r.extraUnits)),backgroundColor:m.map(r=>r.extraUnits>=0?'rgba(58,125,131,.65)':'rgba(184,85,63,.6)'),borderRadius:5}]},
-    options:{...baseOpts(),indexAxis:'y',plugins:{legend:{display:false}},
-      scales:{y:{grid:{display:false},ticks:{font:{family:'Manrope',size:9},color:C.muted}},
-        x:{beginAtZero:true,grid:{color:C.line},ticks:{font:F,color:C.muted}}}}});}
+const baseOpts=(extra={})=>({responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{font:{family:'Manrope',size:11},color:C.ink,boxWidth:12,usePointStyle:true}},tooltip:{titleFont:{family:'Manrope'},bodyFont:{family:'Manrope'}}},scales:{x:{grid:{display:false},ticks:{font:F,color:C.muted,maxRotation:45,autoSkip:true,maxTicksLimit:14}},...extra}});
+function renderMonths(R){const a=monthsAgg(R);mk("cMonths",{data:{labels:a.lbl,datasets:[{type:'bar',label:'Интеграций',data:a.keys.map(k=>a.map[k].count),backgroundColor:'rgba(58,125,131,.55)',borderRadius:5,yAxisID:'y'},{type:'line',label:'Бюджет',data:a.keys.map(k=>a.map[k].spend),borderColor:C.terra,backgroundColor:C.terra,tension:.35,pointRadius:3,yAxisID:'y1'}]},options:baseOpts({y:{position:'left',beginAtZero:true,grid:{color:C.line},ticks:{font:F,color:C.muted,stepSize:1}},y1:{position:'right',beginAtZero:true,grid:{display:false},ticks:{font:F,color:C.muted,callback:v=>fmt.format(v)}}})});}
+function renderMoney(R){const a=monthsAgg(R);mk("cMoney",{type:'bar',data:{labels:a.lbl,datasets:[{label:'Экстра-выручка',data:a.keys.map(k=>Math.round(a.map[k].xRev)),backgroundColor:'rgba(111,143,106,.65)',borderRadius:5},{label:'Бюджет',data:a.keys.map(k=>Math.round(a.map[k].spend)),backgroundColor:'rgba(196,113,80,.6)',borderRadius:5}]},options:baseOpts({y:{beginAtZero:true,grid:{color:C.line},ticks:{font:F,color:C.muted,callback:v=>fmt.format(v)}}})});}
+function renderNet(R){const m=measured(R).filter(r=>r.net!=null).sort((a,b)=>b.net-a.net);mk("cNet",{type:'bar',data:{labels:m.map(r=>`${r.blogger||'—'} ${fmtDate(r.date).slice(0,5)}`),datasets:[{data:m.map(r=>Math.round(r.net)),backgroundColor:m.map(r=>r.net>=0?'rgba(111,143,106,.7)':'rgba(184,85,63,.7)'),borderRadius:5}]},options:{...baseOpts(),indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>money(c.raw)}}},scales:{y:{grid:{display:false},ticks:{font:{family:'Manrope',size:9},color:C.muted}},x:{beginAtZero:true,grid:{color:C.line},ticks:{font:F,color:C.muted,callback:v=>fmt.format(v)}}}}});}
+function renderUnits(R){const m=measured(R).filter(r=>r.matched).sort((a,b)=>b.extraUnits-a.extraUnits);mk("cUnits",{type:'bar',data:{labels:m.map(r=>`${r.blogger||'—'} ${fmtDate(r.date).slice(0,5)}`),datasets:[{data:m.map(r=>Math.round(r.extraUnits)),backgroundColor:m.map(r=>r.extraUnits>=0?'rgba(58,125,131,.65)':'rgba(184,85,63,.6)'),borderRadius:5}]},options:{...baseOpts(),indexAxis:'y',plugins:{legend:{display:false}},scales:{y:{grid:{display:false},ticks:{font:{family:'Manrope',size:9},color:C.muted}},x:{beginAtZero:true,grid:{color:C.line},ticks:{font:F,color:C.muted}}}}});}
 
 let sortK="date",sortDir=1,selIdx=null;
 function renderTable(R){
-  const rows=[...R].sort((a,b)=>{let x=a[sortK],y=b[sortK];
-    if(x==null)x=-Infinity;if(y==null)y=-Infinity;
-    if(typeof x==="string")return x<y?-sortDir:x>y?sortDir:0;return((x||0)-(y||0))*sortDir;});
-  $("#tbody").innerHTML=rows.map((r,i)=>{
-    const idx=R.indexOf(r);
-    const nomatchTitle=r.debugHint?` title="${esc(r.debugHint)}"`:""
-    const flags=[r.overlap?'<span class="flag over">пересеч.</span>':'',
-      r.future?'<span class="flag plan">план</span>':(!r.matched?`<span class="flag nomatch"${nomatchTitle}>0 матчей</span>`:''),
-      (!r.future&&r.matched&&!r.hasCost)?'<span class="flag nocost">нет с/с</span>':''].join('');
-    const netCls=r.net==null?'zero':(r.net>0?'posv':(r.net<0?'neg':'zero'));
-    return`<tr data-idx="${idx}" class="${idx===selIdx?'sel':''}">
-      <td class="l">${fmtDate(r.date)}</td>
-      <td class="l art-cell">${esc(r.blogger||'—')}</td>
-      <td class="l" style="max-width:170px;overflow:hidden;text-overflow:ellipsis" title="${esc(r.rootsRaw||'')}">${esc(r.rootsRaw||'—')}${flags}</td>
-      <td>${r.price!=null?money(r.price):'<span class="zero">—</span>'}</td>
-      <td>${r.future?'<span class="zero">—</span>':r.baseUnitsDay.toFixed(1).replace(".",",")}</td>
-      <td>${r.future?'<span class="zero">—</span>':num(r.winUnits)}</td>
-      <td class="${!r.future&&r.extraUnits>=0?'posv':(r.future?'':'neg')}">${r.future?'<span class="zero">—</span>':num(r.extraUnits)}</td>
-      <td>${r.future?'<span class="zero">—</span>':money(r.extraRev)}</td>
-      <td>${r.future||!r.hasCost?'<span class="zero">—</span>':Math.round(r.buyout*100)+'%'}</td>
-      <td>${r.profitUnit!=null?money(r.profitUnit):'<span class="zero">—</span>'}</td>
-      <td>${money0(r.financial)}</td>
-      <td class="${netCls}">${money0(r.net)}</td>
-      <td>${r.roi!=null?r.roi.toFixed(2).replace(".",",")+'×':'<span class="zero">—</span>'}</td>
-    </tr>`;}).join("");
-  const m=measured(R);const s={price:0,xu:0,xr:0,fin:0};
-  for(const r of R)s.price+=(r.price||0);
-  for(const r of m){if(r.matched){s.xu+=r.extraUnits;s.xr+=r.extraRev;}s.fin+=(r.financial||0);}
-  s.net=s.fin-s.price;
-  $("#tfoot").innerHTML=`<tr><td class="l" colspan="3">Итого · ${R.length} интеграций</td>
-    <td>${money(s.price)}</td><td></td><td></td>
-    <td class="${s.xu>=0?'posv':'neg'}">${num(s.xu)}</td><td>${money(s.xr)}</td><td></td><td></td>
-    <td>${money(s.fin)}</td><td class="${s.net>=0?'posv':'neg'}">${money(s.net)}</td>
-    <td>${s.price>0?(s.fin/s.price).toFixed(2).replace(".",",")+'×':'—'}</td></tr>`;
-}
+  const rows=[...R].sort((a,b)=>{let x=a[sortK],y=b[sortK];if(x==null)x=-Infinity;if(y==null)y=-Infinity;if(typeof x==="string")return x<y?-sortDir:x>y?sortDir:0;return((x||0)-(y||0))*sortDir;});
+  $("#tbody").innerHTML=rows.map(r=>{const idx=R.indexOf(r);const nt=r.debugHint?` title="${esc(r.debugHint)}"`:"";
+    const flags=[r.overlap?'<span class="flag over">пересеч.</span>':'',r.future?'<span class="flag plan">план</span>':(!r.matched?`<span class="flag nomatch"${nt}>0 матчей</span>`:''),(!r.future&&r.matched&&!r.hasCost)?'<span class="flag nocost">нет с/с</span>':''].join('');
+    const nc=r.net==null?'zero':(r.net>0?'posv':(r.net<0?'neg':'zero'));
+    return`<tr data-idx="${idx}" class="${idx===selIdx?'sel':''}"><td class="l">${fmtDate(r.date)}</td><td class="l art-cell">${esc(r.blogger||'—')}</td><td class="l" style="max-width:170px;overflow:hidden;text-overflow:ellipsis" title="${esc(r.rootsRaw||'')}">${esc(r.rootsRaw||'—')}${flags}</td><td>${r.price!=null?money(r.price):'<span class="zero">—</span>'}</td><td>${r.future?'<span class="zero">—</span>':r.baseUnitsDay.toFixed(1).replace(".",",")}</td><td>${r.future?'<span class="zero">—</span>':num(r.winUnits)}</td><td class="${!r.future&&r.extraUnits>=0?'posv':(r.future?'':'neg')}">${r.future?'<span class="zero">—</span>':num(r.extraUnits)}</td><td>${r.future?'<span class="zero">—</span>':money(r.extraRev)}</td><td>${r.future||!r.hasCost?'<span class="zero">—</span>':Math.round(r.buyout*100)+'%'}</td><td>${r.profitUnit!=null?money(r.profitUnit):'<span class="zero">—</span>'}</td><td>${money0(r.financial)}</td><td class="${nc}">${money0(r.net)}</td><td>${r.roi!=null?r.roi.toFixed(2).replace(".",",")+'×':'<span class="zero">—</span>'}</td></tr>`;}).join("");
+  const m=measured(R);const s={price:0,xu:0,xr:0,fin:0};for(const r of R)s.price+=(r.price||0);for(const r of m){if(r.matched){s.xu+=r.extraUnits;s.xr+=r.extraRev;}s.fin+=(r.financial||0);}s.net=s.fin-s.price;
+  $("#tfoot").innerHTML=`<tr><td class="l" colspan="3">Итого · ${R.length}</td><td>${money(s.price)}</td><td></td><td></td><td class="${s.xu>=0?'posv':'neg'}">${num(s.xu)}</td><td>${money(s.xr)}</td><td></td><td></td><td>${money(s.fin)}</td><td class="${s.net>=0?'posv':'neg'}">${money(s.net)}</td><td>${s.price>0?(s.fin/s.price).toFixed(2).replace(".",",")+'×':'—'}</td></tr>`;}
+
 function renderDrill(r){
   $("#drillPanel").classList.remove("hidden");
-  $("#drillTitle").textContent=`Заказы · ${r.blogger||'—'}, ${fmtDate(r.date)}`;
-  $("#drillSub").textContent=`корни: ${r.rootsRaw||'—'} · база/день ${r.baseUnitsDay.toFixed(1).replace(".",",")} шт`;
+  $("#drillTitle").textContent=`${r.blogger||'—'} · ${fmtDate(r.date)}`;
+  $("#drillSub").textContent=`корни: ${r.rootsRaw||'—'} · база/день ${r.baseUnitsDay.toFixed(1).replace(".",",")}`;
   const lbl=r.series.map(p=>fmtDate(p.date).slice(0,5));
   const bg=r.series.map(p=>p.eff?'rgba(58,125,131,.75)':(p.base?'rgba(155,145,132,.45)':'rgba(220,210,195,.5)'));
-  mk("cDrill",{type:'bar',data:{labels:lbl,datasets:[
-    {label:'Заказы/день',data:r.series.map(p=>p.u),backgroundColor:bg,borderRadius:5,order:2},
-    {type:'line',label:'База (среднее)',data:r.series.map(()=>+r.baseUnitsDay.toFixed(2)),borderColor:C.terra,borderDash:[6,4],pointRadius:0,borderWidth:2,order:1}]},
-    options:baseOpts({y:{beginAtZero:true,grid:{color:C.line},ticks:{font:F,color:C.muted}}})});
+  mk("cDrill",{type:'bar',data:{labels:lbl,datasets:[{label:'Заказы/день',data:r.series.map(p=>p.u),backgroundColor:bg,borderRadius:5,order:2},{type:'line',label:'База',data:r.series.map(()=>+r.baseUnitsDay.toFixed(2)),borderColor:C.terra,borderDash:[6,4],pointRadius:0,borderWidth:2,order:1}]},options:baseOpts({y:{beginAtZero:true,grid:{color:C.line},ticks:{font:F,color:C.muted}}})});
+  // article breakdown table
+  const arts=Object.entries(r.artBreakdown).sort((a,b)=>(b[1].effTotal-a[1].effTotal));
+  const nArts=arts.length||1;const sharePrice=(r.price||0)/nArts;
+  if(arts.length){
+    $("#drillArts").innerHTML=`<table><thead><tr><th class="l">Артикул</th><th>База/день</th><th>В эффекте</th><th>Экстра</th><th>Выкуп</th><th>Приб/шт</th><th>Финрез.</th><th>Доля бюджета</th><th>Чистый</th></tr></thead><tbody>`+arts.map(([a,d])=>{const net=d.financial!=null?d.financial-sharePrice:null;const nc=net==null?'zero':(net>0?'posv':'neg');return`<tr><td class="l art-cell">${esc(a)}</td><td>${d.baseDay.toFixed(1).replace(".",",")}</td><td>${num(d.effTotal)}</td><td class="${d.extra>=0?'posv':'neg'}">${num(d.extra)}</td><td>${d.hasCost?Math.round(d.buyout*100)+'%':'<span class="zero">—</span>'}</td><td>${d.profitUnit!=null?money(d.profitUnit):'<span class="zero">—</span>'}</td><td>${money0(d.financial)}</td><td>${money(sharePrice)}</td><td class="${nc}">${money0(net)}</td></tr>`;}).join("")+`</tbody></table>`;}
+  else{$("#drillArts").innerHTML=`<div style="padding:16px;color:var(--muted)">Нет совпадений по артикулам.</div>`;}
   $("#drillPanel").scrollIntoView({behavior:"smooth",block:"nearest"});
 }
+
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-
 document.addEventListener("click",e=>{
-  const pb=e.target.closest(".prd-btn");
-  if(pb){periodFilter=pb.dataset.p;render();return;}
-  const th=e.target.closest("#tbl thead th");
-  if(th){const k=th.dataset.k;if(!k)return;if(sortK===k)sortDir*=-1;else{sortK=k;sortDir=k==="date"?1:-1;}renderTable(filteredR());return;}
-  const tr=e.target.closest("#tbody tr");
-  if(tr){const idx=+tr.dataset.idx;selIdx=idx;renderTable(filteredR());renderDrill(state.computed.integrations[idx]);}
+  const pb=e.target.closest(".prd-btn");if(pb){periodFilter=pb.dataset.p;render();return;}
+  const th=e.target.closest("#tbl thead th");if(th){const k=th.dataset.k;if(!k)return;if(sortK===k)sortDir*=-1;else{sortK=k;sortDir=k==="date"?1:-1;}renderTable(filteredR());return;}
+  const tr=e.target.closest("#tbody tr");if(tr){const idx=+tr.dataset.idx;selIdx=idx;renderTable(filteredR());renderDrill(state.computed.integrations[idx]);}
 });
-
-function readCfg(){
-  state.tokenEF=$("#tokenEF").value;state.tokenEZFR=$("#tokenEZFR").value;state.proxy=$("#proxy").value;
-  state.registry=$("#registry").value;state.cost=$("#cost").value;state.report=$("#report").value;
-  state.baseDays=Math.max(1,+$("#baseDays").value||3);
-  state.effDays=Math.max(0,+$("#effDays").value||3);
-  state.buyout=Math.max(1,+$("#buyout").value||100);state.priceField="finishedPrice";
-}
-function validate(){
-  if(!state.tokenEF.trim()&&!state.tokenEZFR.trim())return"Введите хотя бы один API токен WB.";
-  if(!/^https?:\/\//.test(state.proxy.trim()))return"Введите URL прокси.";
-  if(!/^https?:\/\//.test(state.registry.trim()))return"Введите ссылку на реестр.";
-  return null;
-}
-async function go(){
-  readCfg();const v=validate();const ce=$("#cfgErr");
-  if(v){ce.textContent=v;ce.classList.remove("hidden");return;}
-  ce.classList.add("hidden");saveCfg();$("#loader").classList.add("on");
-  try{state.computed=await runPipeline();stepsDone();await sleep(250);
-    $("#config").classList.add("hidden");$("#dash").classList.remove("hidden");render();
-  }catch(e){ce.textContent="Ошибка: "+(e.message||e);ce.classList.remove("hidden");}
-  finally{$("#loader").classList.remove("on");}
-}
+function readCfg(){state.tokenEF=$("#tokenEF").value;state.tokenEZFR=$("#tokenEZFR").value;state.proxy=$("#proxy").value;state.registry=$("#registry").value;state.cost=$("#cost").value;state.report=$("#report").value;state.baseDays=Math.max(1,+$("#baseDays").value||3);state.effDays=Math.max(0,+$("#effDays").value||3);state.buyout=Math.max(1,+$("#buyout").value||100);}
+function validate(){if(!state.tokenEF.trim()&&!state.tokenEZFR.trim())return"Введите хотя бы один токен.";if(!/^https?:\/\//.test(state.proxy.trim()))return"URL прокси.";if(!/^https?:\/\//.test(state.registry.trim()))return"Ссылка на реестр.";return null;}
+async function go(){readCfg();const v=validate();const ce=$("#cfgErr");if(v){ce.textContent=v;ce.classList.remove("hidden");return;}ce.classList.add("hidden");saveCfg();$("#loader").classList.add("on");try{state.computed=await runPipeline();stepsDone();await sleep(250);$("#config").classList.add("hidden");$("#dash").classList.remove("hidden");render();}catch(e){ce.textContent="Ошибка: "+(e.message||e);ce.classList.remove("hidden");}finally{$("#loader").classList.remove("on");}}
 $("#load").addEventListener("click",go);
-$("#reloadBtn").addEventListener("click",async()=>{readCfg();$("#loader").classList.add("on");try{state.computed=await runPipeline();stepsDone();render();}catch(e){alert("Ошибка: "+e.message);}finally{$("#loader").classList.remove("on");}});
+$("#reloadBtn").addEventListener("click",async()=>{readCfg();$("#loader").classList.add("on");try{state.computed=await runPipeline();stepsDone();render();}catch(e){alert(e.message);}finally{$("#loader").classList.remove("on");}});
 $("#backBtn").addEventListener("click",()=>{$("#dash").classList.add("hidden");$("#config").classList.remove("hidden");});
 $("#openProxyHelp").addEventListener("click",e=>{e.preventDefault();$("#proxyHelp").classList.remove("hidden");});
 $("#closeProxyHelp").addEventListener("click",()=>$("#proxyHelp").classList.add("hidden"));
 $("#proxyHelp").addEventListener("click",e=>{if(e.target.id==="proxyHelp")$("#proxyHelp").classList.add("hidden");});
-$("#copyWorker").addEventListener("click",()=>{navigator.clipboard.writeText($("#workerCode").textContent).then(()=>{$("#copyWorker").textContent="Скопировано ✓";setTimeout(()=>$("#copyWorker").textContent="Скопировать код воркера",1500);});});
+$("#copyWorker").addEventListener("click",()=>{navigator.clipboard.writeText($("#workerCode").textContent).then(()=>{$("#copyWorker").textContent="✓";setTimeout(()=>$("#copyWorker").textContent="Скопировать",1500);});});
 loadCfg();
 </script>
 <script>
 const WORKER_SRC=`const CORS={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"GET,POST,OPTIONS","Access-Control-Allow-Headers":"Authorization,Content-Type","Access-Control-Max-Age":"86400"};
-const ALLOWED=["advert-api.wildberries.ru","statistics-api.wildberries.ru","content-api.wildberries.ru","common-api.wildberries.ru","seller-analytics-api.wildberries.ru"];
-export default {
-  async fetch(request){
-    if(request.method==="OPTIONS") return new Response(null,{status:204,headers:CORS});
-    const u=new URL(request.url);
-    const target=u.pathname.slice(1)+u.search;
-    if(!/^https?:\\/\\//i.test(target)) return j(400,{error:'Укажите полный URL WB после "/"'});
-    let host; try{host=new URL(target).host;}catch{return j(400,{error:"bad url"});}
-    if(!ALLOWED.includes(host)) return j(403,{error:"host not allowed: "+host});
-    const h=new Headers();
-    const a=request.headers.get("Authorization"); if(a) h.set("Authorization",a);
-    let r; try{r=await fetch(target,{method:request.method,headers:h});}catch(e){return j(502,{error:"WB fetch: "+e.message});}
-    const out=new Headers(r.headers); for(const k in CORS) out.set(k,CORS[k]); out.delete("content-encoding");
-    return new Response(r.body,{status:r.status,statusText:r.statusText,headers:out});
-  }
-};
-function j(s,o){return new Response(JSON.stringify(o),{status:s,headers:{...CORS,"Content-Type":"application/json"}});}`;
+const ALLOWED=["advert-api.wildberries.ru","statistics-api.wildberries.ru","content-api.wildberries.ru","common-api.wildberries.ru"];
+export default{async fetch(r){if(r.method==="OPTIONS")return new Response(null,{status:204,headers:CORS});const u=new URL(r.url),t=u.pathname.slice(1)+u.search;if(!/^https?:\\/\\//i.test(t))return j(400);let h;try{h=new URL(t).host}catch{return j(400)};if(!ALLOWED.includes(h))return j(403);const hd=new Headers;const a=r.headers.get("Authorization");if(a)hd.set("Authorization",a);let res;try{res=await fetch(t,{method:r.method,headers:hd})}catch(e){return j(502)};const o=new Headers(res.headers);for(const k in CORS)o.set(k,CORS[k]);o.delete("content-encoding");return new Response(res.body,{status:res.status,headers:o})}};
+function j(s){return new Response(JSON.stringify({error:s}),{status:s,headers:{...CORS,"Content-Type":"application/json"}})}`;
 document.getElementById("workerCode").textContent=WORKER_SRC;
 </script>
-</body>
-</html>
+</body></html>
