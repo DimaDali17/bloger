@@ -121,7 +121,8 @@ function fmtDate(s){if(!s)return"";const[y,m,d]=s.split("-");return`${d}.${m}.${
 // Даты считаются в UTC, чтобы часовой пояс браузера (например, UTC+3) не сдвигал дни
 function addDays(iso,n){const d=new Date(iso+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
 function*dayRange(a,b){const d=new Date(a+"T00:00:00Z");const e=new Date(b+"T00:00:00Z");while(d<=e){yield d.toISOString().slice(0,10);d.setUTCDate(d.getUTCDate()+1);}}
-function todayISO(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;}
+// «Сегодня» по Москве: WB считает заказы по московскому времени, часовой пояс компьютера не важен
+function todayISO(){try{return new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Moscow"}).format(new Date());}catch(e){const d=new Date(Date.now()+3*3600e3);return d.toISOString().slice(0,10);}}
 function tableRows(text,delim){const out=[];let row=[],cur="",q=false;for(let i=0;i<text.length;i++){const c=text[i];if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}else{if(c==='"')q=true;else if(c===delim){row.push(cur);cur="";}else if(c==='\n'){row.push(cur);out.push(row);row=[];cur="";}else if(c==='\r'){}else cur+=c;}}if(cur.length||row.length){row.push(cur);out.push(row);}return out.filter(r=>r.length>1||(r[0]&&r[0].trim()));}
 function detectDelim(text){const f=text.split("\n")[0]||"";return f.indexOf("\t")>=0?"\t":(f.indexOf(";")>=0&&f.indexOf(",")<0?";":",");}
 async function fetchSheet(url){url=(url||"").trim();if(!url)return null;if(/\/edit/.test(url)&&!/output=(csv|tsv)|format=(csv|tsv)/.test(url)){const m=url.match(/\/d\/([^/]+)/);const gid=(url.match(/gid=(\d+)/)||[])[1]||"0";if(m)url=`https://docs.google.com/spreadsheets/d/${m[1]}/export?format=csv&gid=${gid}`;}const r=await fetch(url);if(!r.ok)throw new Error("HTTP "+r.status);return await r.text();}
