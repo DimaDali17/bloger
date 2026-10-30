@@ -48,7 +48,7 @@ tr.i .dt{font-weight:700;color:var(--ink)}tr.i .sub{color:var(--muted);margin-le
 .tw{display:inline-block;width:14px;color:var(--gold2)}.cnt{color:var(--muted);font-weight:600;margin-left:6px;font-size:12px}
 .neg{color:var(--rust);font-weight:700}.posv{color:var(--sage);font-weight:700}.zero{color:var(--faint);font-weight:500}.muted{color:var(--muted);font-weight:600;font-size:11.5px}
 .warn{color:var(--terra);font-size:11px;margin-left:6px;font-weight:700;cursor:help}
-.flag{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:5px;vertical-align:middle;letter-spacing:.02em;cursor:help}.flag.over{background:#f3e7df;color:#a85a3a}.flag.plan{background:#e8e2d6;color:#6f6550}.flag.nocost{background:#f1e7d2;color:#8a6d38}.flag.nomatch,.flag.nodata{background:#f6ddd6;color:#a8452e}.flag.low{background:#e6ecef;color:#3d6670}.flag.inh{background:#ebe6f1;color:#5e4f7a}
+.flag{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:5px;vertical-align:middle;letter-spacing:.02em;cursor:help}.flag.over{background:#f3e7df;color:#a85a3a}.flag.plan{background:#e8e2d6;color:#6f6550}.flag.live{background:#dfe9e6;color:#1f5a5f}tr.partial td:not(.c0){color:var(--muted);font-style:italic}.flag.nocost{background:#f1e7d2;color:#8a6d38}.flag.nomatch,.flag.nodata{background:#f6ddd6;color:#a8452e}.flag.low{background:#e6ecef;color:#3d6670}.flag.inh{background:#ebe6f1;color:#5e4f7a}
 tr.d>td{background:#f9f7f2;padding:12px 16px 16px 34px;text-align:left;white-space:normal;cursor:default}
 .dbox{display:flex;flex-direction:column;gap:10px}.dnote{font-size:12px;color:var(--ink2);line-height:1.5}
 .dtab{border:1px solid var(--line);border-radius:10px;overflow:hidden;width:auto;min-width:min(720px,100%)}.dtab th{position:static;cursor:default;background:#efe9de;font-size:10px;padding:7px 10px;text-align:right}.dtab th.l,.dtab td.l{text-align:left}.dtab td{padding:6px 10px;font-size:12px;background:#fff;cursor:default;text-align:right;white-space:nowrap}
@@ -87,7 +87,7 @@ tr.d>td{background:#f9f7f2;padding:12px 16px 16px 34px;text-align:left;white-spa
       <div><label class="label" for="fBlogger">Блогер</label><select id="fBlogger" class="fsel"></select></div>
       <div><label class="label" for="fQ">Поиск</label><input id="fQ" class="fsel" type="search" placeholder="Блогер или артикул"></div>
       <div><label class="label" for="fRes">Результат</label><select id="fRes" class="fsel"><option value="all">Все</option><option value="pos">Окупились</option><option value="neg">В минусе</option></select></div>
-      <div class="checks"><label><input type="checkbox" id="fPlan">Запланированные</label><label><input type="checkbox" id="fBad">Без замера</label></div>
+      <div class="checks"><label><input type="checkbox" id="fPlan">Идущие и будущие</label><label><input type="checkbox" id="fBad">Без замера</label></div>
     </div>
     <div class="toolbar"><span class="shown" id="shown"></span><span class="spacer"></span><button class="btn-ghost" id="toggleAll">Развернуть все</button><button class="btn-ghost" id="resetF">Сбросить фильтры</button><button class="btn-ghost" id="exportCsv">Экспорт CSV</button></div>
     <div class="tablewrap"><table id="pv"><thead><tr id="pvHead"></tr></thead><tbody id="pvBody"></tbody></table></div>
@@ -172,7 +172,11 @@ function computeAll(reg,cnt,cost,today){
   for(const r of L){
     // эффект считается только по полностью прошедшим дням (сегодняшний день ещё не закончился)
     r.plan=r.eE>=today;
-    const need=[...dayRange(r.bS,r.plan?addDays(today,-1):r.eE)];
+    // идущая интеграция: вышла, но окно эффекта ещё не закончилось — считаем по прошедшим дням
+    r.live=r.plan&&r.date<today;
+    r.eLast=r.plan?addDays(today,-1):r.eE;
+    r.elapsed=r.live?[...dayRange(r.eS,r.eLast)].length:0;
+    const need=[...dayRange(r.bS,r.eLast)];
     r.missing=need.filter(d=>!cnt.has(d)).length;
     r.status=r.plan?"plan":(r.missing>0?"nodata":(!r.arts.size?"nomatch":"ok"));
   }
@@ -192,12 +196,12 @@ function computeAll(reg,cnt,cost,today){
       if(src&&src.base[a]!=null){r.base[a]=src.base[a];r.baseFrom[a]=src.id;r.inhFrom=src.id;}
       else{let s=0;for(const d of dayRange(r.bS,r.bE))s+=U(d,a);r.base[a]=s/B;}
     }
-    for(const d of dayRange(r.bS,r.eE)){let u=0;for(const a of r.arts)u+=U(d,a);r.series.push({d,u,e:d>=r.eS});}
-    if(r.status==="plan")continue;
+    for(const d of dayRange(r.bS,r.eLast)){let u=0;for(const a of r.arts)u+=U(d,a);r.series.push({d,u,e:d>=r.eS});}
+    if(r.status==="plan"&&!(r.live&&r.missing===0&&r.arts.size))continue;
     let extra=0,fin=0,finKnown=0,baseSum=0;
     for(const a of r.arts){
       let eff=0,x=0;
-      for(const d of dayRange(r.eS,r.eE)){const u=U(d,a);eff+=u;x+=(u-r.base[a])/cover(d,a);}
+      for(const d of dayRange(r.eS,r.eLast)){const u=U(d,a);eff+=u;x+=(u-r.base[a])/cover(d,a);}
       if(eff===0&&r.base[a]===0)continue;
       const c=cost.map[costKey(a)];const bo=c&&c.buyout!=null?c.buyout:defBuy;const pu=c?c.profit:null;
       const f=pu!=null?x*bo*pu:null;
@@ -209,6 +213,7 @@ function computeAll(reg,cnt,cost,today){
     r.financial=finKnown?fin:(Object.keys(r.byArt).length?null:0);
     r.net=r.financial!=null&&r.price!=null?r.financial-r.price:null;
     r.romi=r.financial!=null&&r.price>0?r.financial/r.price:null;
+    if(r.status==="plan"){r.partial=true;r.net=null;r.romi=null;}
   }
   return L;
 }
@@ -226,7 +231,7 @@ const monthLbl=ym=>{const[y,m]=ym.split("-");return`${MONTHS[+m-1]} ${y}`;};
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 /* ---------- сводная таблица ---------- */
-const DEF_VIEW={group:"blogger",from:"",to:"",blogger:"",q:"",res:"all",plan:false,bad:false,sk:"net",sd:-1};
+const DEF_VIEW={group:"blogger",from:"",to:"",blogger:"",q:"",res:"all",cur:true,bad:false,sk:"net",sd:-1};
 let V={...DEF_VIEW};const openG=new Set(),openI=new Set();
 function saveView(){try{localStorage.setItem("ef_int_view1",JSON.stringify(V));}catch(e){}}
 function loadView(){try{const v=JSON.parse(localStorage.getItem("ef_int_view1")||"null");if(v&&typeof v==="object")V={...DEF_VIEW,...v};}catch(e){}}
@@ -239,7 +244,7 @@ function filtered(){
   return state.computed.integrations.filter(r=>{
     if(V.from&&r.date<V.from)return false;if(V.to&&r.date>V.to)return false;
     if(V.blogger&&(r.blogger||"—")!==V.blogger)return false;
-    if(r.status==="plan"&&!V.plan)return false;
+    if(r.status==="plan"&&!V.cur)return false;
     if((r.status==="nodata"||r.status==="nomatch")&&!V.bad)return false;
     if(V.res!=="all"&&r.status==="ok"){if(r.net==null)return false;if(V.res==="pos"&&r.net<0)return false;if(V.res==="neg"&&r.net>=0)return false;}
     if(V.res!=="all"&&r.status!=="ok")return false;
@@ -261,6 +266,7 @@ function itemsOf(r){
 }
 function vals(it){
   const r=it.r;const budget=r.price!=null?r.price*it.share:null;
+  if(r.status==="plan"&&r.partial){const d=it.art?r.byArt[it.art]:null;return{budget,extra:d?d.extra:r.extra,fin:d?d.fin:r.financial,net:null,romi:null,cpo:null};}
   if(r.status!=="ok")return{budget,extra:null,fin:null,net:null,romi:null,cpo:null};
   let extra,fin;if(it.art){const d=r.byArt[it.art];extra=d.extra;fin=d.fin;}else{extra=r.extra;fin=r.financial;}
   const net=fin!=null&&budget!=null?fin-budget:null;
@@ -271,6 +277,10 @@ function agg(items){
   for(const it of items){const s=it.r.status;if(s==="plan"){np++;continue;}if(s!=="ok"){nb++;continue;}n++;const v=it.v;
     if(v.budget!=null){budget+=v.budget;hasB=true;}extra+=v.extra;
     if(v.net!=null){fin+=v.fin;budN+=v.budget;net+=v.net;k++;}else inc++;}
+  if(!n){// в группе только идущие интеграции — показываем их предварительные цифры
+    const pp=items.filter(it=>it.r.status==="plan"&&it.r.partial);
+    if(pp.length){const fs=pp.filter(it=>it.v.fin!=null);return{n,np,nb,partial:true,budget:pp.reduce((s,it)=>s+(it.v.budget||0),0),extra:pp.reduce((s,it)=>s+it.v.extra,0),fin:fs.length?fs.reduce((s,it)=>s+it.v.fin,0):null,net:null,romi:null,cpo:null,inc:0};}
+  }
   return{n,np,nb,budget:hasB?budget:null,extra:n?extra:null,fin:k?fin:null,net:k?net:null,romi:budN>0?fin/budN:null,cpo:extra>0.5&&hasB?budget/extra:null,inc};
 }
 function cmp(a,b){const k=V.sk,d=V.sd;
@@ -282,7 +292,8 @@ function cmpI(a,b){const k=V.sk,d=V.sd;
 
 function flagsHtml(r){
   const f=[];const nm=id=>{const j=byId(id);return`${fmtDate(j.date)} ${j.blogger||"—"}`;};
-  if(r.status==="plan")f.push(`<span class="flag plan" title="Окно эффекта закончится ${fmtDate(r.eE)} — пока не считается">план</span>`);
+  if(r.status==="plan"&&r.live)f.push(`<span class="flag live" title="Окно эффекта закончится ${fmtDate(r.eE)}. ${r.partial?"Цифры предварительные — за прошедшие "+r.elapsed+" дн., в итоги групп не входят.":r.elapsed?"Нет данных о заказах за часть окна.":"Сегодня день выхода — первые цифры будут завтра."}">идёт ${r.elapsed}/${state.effDays} дн</span>`);
+  else if(r.status==="plan")f.push(`<span class="flag plan" title="Выход ${fmtDate(r.date)} — ещё не состоялся">план</span>`);
   if(r.status==="nodata")f.push(`<span class="flag nodata" title="Нет данных о заказах за ${r.missing} дн. окна — даты вне выгрузки API/отчёта">нет данных</span>`);
   if(r.status==="nomatch")f.push(`<span class="flag nomatch" title="${esc(r.hint||"")}">0 совпадений</span>`);
   if(r.status==="ok"){
@@ -295,7 +306,7 @@ function flagsHtml(r){
   return f.join("");
 }
 function numCells(v,isGroup,a){
-  const nCell=isGroup?`${a.n}${a.np?` <span class="muted">+${a.np} план</span>`:""}${a.nb?` <span class="muted">+${a.nb} б/з</span>`:""}`:"";
+  const nCell=isGroup?`${a.n}${a.np?` <span class="muted" title="идут или запланированы — в итоги не входят">+${a.np} идёт</span>`:""}${a.nb?` <span class="muted">+${a.nb} б/з</span>`:""}`:"";
   const warn=isGroup&&a.inc?`<span class="warn" title="${a.inc} без цены или себестоимости — не входят в финрез, чистый итог и ROMI">⚠${a.inc}</span>`:"";
   return`<td>${nCell}</td><td>${money(v.budget)}</td><td class="${cls(v.extra)}">${sint(v.extra)}</td><td>${money(v.fin)}</td><td class="${cls(v.net)}">${smoney(v.net)}${warn}</td><td>${xf(v.romi)}</td><td>${money(v.cpo)}</td>`;
 }
@@ -305,7 +316,7 @@ function intRow(it,child){
   if(V.group==="blogger")name=`${dt}<span class="sub">${esc(r.rootsRaw||"—")}</span>`;
   else if(V.group==="article")name=`${dt}<span class="sub">${esc(r.blogger||"—")}</span>`;
   else name=`${dt}<span class="sub">${esc(r.blogger||"—")} · ${esc(r.rootsRaw||"—")}</span>`;
-  let h=`<tr class="i${child?" child":""}${open?" open":""}" data-i="${r.id}" data-a="${esc(it.art||"")}"><td class="c0" title="${esc((r.blogger||"—")+" · "+(r.rootsRaw||""))}">${name}${flagsHtml(r)}</td>${numCells(v,false)}</tr>`;
+  let h=`<tr class="i${child?" child":""}${open?" open":""}${r.status==="plan"?" partial":""}" data-i="${r.id}" data-a="${esc(it.art||"")}"><td class="c0" title="${esc((r.blogger||"—")+" · "+(r.rootsRaw||""))}">${name}${flagsHtml(r)}</td>${numCells(v,false)}</tr>`;
   if(open)h+=detailRow(r,it.art);
   return h;
 }
@@ -348,7 +359,7 @@ function render(){
     groups.sort((x,y)=>V.sk==="name"&&V.group==="month"?(x.key<y.key?-1:1)*V.sd:cmp(x,y));
     for(const g of groups){
       const open=openG.has(g.key);const lbl=V.group==="month"?monthLbl(g.key):g.key;
-      h+=`<tr class="g" data-g="${esc(g.key)}"><td class="c0" title="${esc(lbl)}"><span class="tw">${open?"▾":"▸"}</span>${esc(lbl)}</td>${numCells(g.a,true,g.a)}</tr>`;
+      h+=`<tr class="g${g.a.partial?" partial":""}" data-g="${esc(g.key)}"><td class="c0" title="${esc(lbl)}"><span class="tw">${open?"▾":"▸"}</span>${esc(lbl)}</td>${numCells(g.a,true,g.a)}</tr>`;
       if(open){g.its.sort(cmpI);for(const it of g.its)h+=intRow(it,true);}
     }
   }
@@ -357,11 +368,11 @@ function render(){
   $("#toggleAll").classList.toggle("hidden",V.group==="none");
   const mt=state.computed.meta;
   $("#periodChip").textContent=`Данные ${fmtDate(mt.from)} → ${fmtDate(mt.to)} · база ${state.baseDays} дн / эффект ${state.effDays} дн`;
-  $("#method").innerHTML=`<b>Как считается.</b> База — среднее число заказов в день за ${state.baseDays} дн. до выхода. Доп. заказы — заказы за ${state.effDays} дн. начиная с дня выхода минус база. Отменённые заказы исключены. Если окна эффекта разных интеграций пересекаются по одним артикулам, доп. заказы делятся между ними поровну по дням, а если окно базы попало в эффект более ранней интеграции, база берётся от неё. Финрез = доп. заказы × выкуп × прибыль на штуку, по каждому артикулу. Финрез, чистый итог и ROMI считаются только по интеграциям с ценой и себестоимостью (⚠ — сколько не вошло). Запланированные и интеграции без данных в итоги групп не входят. При группировке по артикулам бюджет делится пропорционально заказам артикула в окне эффекта.`;
+  $("#method").innerHTML=`<b>Как считается.</b> База — среднее число заказов в день за ${state.baseDays} дн. до выхода. Доп. заказы — заказы за ${state.effDays} дн. начиная с дня выхода минус база. Отменённые заказы исключены. Если окна эффекта разных интеграций пересекаются по одним артикулам, доп. заказы делятся между ними поровну по дням, а если окно базы попало в эффект более ранней интеграции, база берётся от неё. Финрез = доп. заказы × выкуп × прибыль на штуку, по каждому артикулу. Финрез, чистый итог и ROMI считаются только по интеграциям с ценой и себестоимостью (⚠ — сколько не вошло). У идущих интеграций (окно эффекта ещё не закончилось) цифры предварительные — за прошедшие полные дни, они показаны курсивом и в итоги групп не входят, как и будущие и интеграции без данных. При группировке по артикулам бюджет делится пропорционально заказам артикула в окне эффекта.`;
   saveView();
 }
 function syncControls(){
-  $("#fGroup").value=V.group;$("#fFrom").value=V.from;$("#fTo").value=V.to;$("#fQ").value===V.q||($("#fQ").value=V.q);$("#fRes").value=V.res;$("#fPlan").checked=V.plan;$("#fBad").checked=V.bad;
+  $("#fGroup").value=V.group;$("#fFrom").value=V.from;$("#fTo").value=V.to;$("#fQ").value===V.q||($("#fQ").value=V.q);$("#fRes").value=V.res;$("#fPlan").checked=V.cur;$("#fBad").checked=V.bad;
   const bl=[...new Set(state.computed.integrations.map(r=>r.blogger||"—"))].sort((a,b)=>a.localeCompare(b,"ru"));
   if(V.blogger&&!bl.includes(V.blogger))V.blogger="";
   const sel=$("#fBlogger");const html=`<option value="">Все блогеры</option>`+bl.map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join("");if(sel.dataset.h!==html){sel.innerHTML=html;sel.dataset.h=html;}sel.value=V.blogger;
@@ -372,7 +383,7 @@ function exportCsv(){
   const R=filtered();const st={ok:"замер",plan:"план",nodata:"нет данных",nomatch:"0 совпадений"};
   const n2=v=>v==null?"":String(Math.round(v*100)/100).replace(".",",");
   const lines=[["Дата","Блогер","Артикулы","Статус","Бюджет","Доп. заказы","Финрез","Чистый итог","ROMI","Пересечение","Нет с/с"].join(";")];
-  for(const r of [...R].sort((a,b)=>a.date<b.date?-1:1)){lines.push([fmtDate(r.date),r.blogger,r.rootsRaw,st[r.status],n2(r.price),n2(r.extra),n2(r.financial),n2(r.net),n2(r.romi),r.splitWith&&r.splitWith.length?"да":"",(r.noCost||[]).join(" ")].map(x=>{const s=String(x==null?"":x);return/[;"\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s;}).join(";"));}
+  for(const r of [...R].sort((a,b)=>a.date<b.date?-1:1)){lines.push([fmtDate(r.date),r.blogger,r.rootsRaw,r.live?`идёт ${r.elapsed}/${state.effDays} дн`:st[r.status],n2(r.price),n2(r.extra),n2(r.financial),n2(r.net),n2(r.romi),r.splitWith&&r.splitWith.length?"да":"",(r.noCost||[]).join(" ")].map(x=>{const s=String(x==null?"":x);return/[;"\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s;}).join(";"));}
   const blob=new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`integracii_${todayISO()}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
 }
 
@@ -389,7 +400,7 @@ $("#fTo").addEventListener("change",e=>{V.to=e.target.value;render();});
 $("#fBlogger").addEventListener("change",e=>{V.blogger=e.target.value;render();});
 let qT=null;$("#fQ").addEventListener("input",e=>{clearTimeout(qT);qT=setTimeout(()=>{V.q=e.target.value;render();},150);});
 $("#fRes").addEventListener("change",e=>{V.res=e.target.value;render();});
-$("#fPlan").addEventListener("change",e=>{V.plan=e.target.checked;render();});
+$("#fPlan").addEventListener("change",e=>{V.cur=e.target.checked;render();});
 $("#fBad").addEventListener("change",e=>{V.bad=e.target.checked;render();});
 $("#resetF").addEventListener("click",()=>{const g=V.group;V={...DEF_VIEW,group:g};if(g==="month"){V.sk="name";}openG.clear();openI.clear();render();});
 $("#toggleAll").addEventListener("click",()=>{if(openG.size)openG.clear();else document.querySelectorAll("#pvBody tr.g").forEach(t=>openG.add(t.dataset.g));render();});
