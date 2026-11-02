@@ -53,6 +53,12 @@ tr.d>td{background:#f9f7f2;padding:12px 16px 16px 34px;text-align:left;white-spa
 .dbox{display:flex;flex-direction:column;gap:10px}.dnote{font-size:12px;color:var(--ink2);line-height:1.5}
 .dtab{border:1px solid var(--line);border-radius:10px;overflow:hidden;width:auto;min-width:min(720px,100%)}.dtab th{position:static;cursor:default;background:#efe9de;font-size:10px;padding:7px 10px;text-align:right}.dtab th.l,.dtab td.l{text-align:left}.dtab td{padding:6px 10px;font-size:12px;background:#fff;cursor:default;text-align:right;white-space:nowrap}
 .days{display:flex;gap:4px;flex-wrap:wrap}.day{border-radius:7px;padding:4px 7px;font-size:11.5px;background:#ece6da;color:var(--ink2);text-align:center;min-width:46px}.day b{display:block;font-size:13px;color:var(--ink)}.day.e{background:#dfe9e6;color:#2f5f63}.day.e b{color:#1f4f53}
+.ch-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}.ch-title{font-family:'Comfortaa';font-size:17px;margin:0;font-weight:700;flex:1;min-width:180px}.ch-sel{display:flex;gap:8px;flex-wrap:wrap}.ch-sel .fsel{width:auto;max-width:100%;min-width:170px}
+.ch-sum{font-size:13.5px;color:var(--ink2);margin:4px 0 10px;line-height:1.6}.ch-sum b{color:var(--ink)}.ch-sum .posv,.ch-sum .neg{font-weight:800}
+.ch-wrap{position:relative;width:100%;min-height:200px}.ch-wrap svg{display:block;width:100%;height:auto;overflow:visible}.ch-wrap .hit{cursor:default}
+.ch-tip{position:absolute;pointer-events:none;background:#2c2722;color:#f6f0e4;border-radius:10px;padding:8px 11px;font-size:12px;line-height:1.5;white-space:nowrap;z-index:5;box-shadow:0 10px 24px -10px rgba(0,0,0,.5)}.ch-tip b{color:#fff}
+.ch-legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink2);margin-top:8px}.ch-legend span{display:inline-flex;align-items:center;gap:6px}.ch-legend i{display:inline-block;width:14px;height:10px;border-radius:3px}
+.lg-b{background:#c9bfae}.lg-line{height:0!important;border-top:2px dashed #c47150;border-radius:0!important}.lg-x{background:#5c8f5f}.lg-d{background:repeating-linear-gradient(45deg,#e9b8a9 0 3px,#f7e3dc 3px 6px);border:1px solid #b8553f}.lg-a{background:#ece6da;border:1px solid #c9bfae}
 .empty{padding:28px;text-align:center;color:var(--muted);font-size:13.5px}
 #loader{position:fixed;inset:0;background:rgba(246,242,234,.92);backdrop-filter:blur(4px);display:none;place-items:center;z-index:60}#loader.on{display:grid}.loadcard{text-align:center}.spin{width:54px;height:54px;border-radius:50%;border:4px solid var(--line2);border-top-color:var(--gold);margin:0 auto 18px;animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}#loadlog{font-size:13px;color:var(--ink2);font-weight:600;max-width:420px;text-align:left}#loadlog .step{opacity:.5;margin:3px 0}#loadlog .step.now{opacity:1;color:var(--ink)}#loadlog .step.done{opacity:.7}#loadlog .step.done:before{content:"✓ ";color:var(--green)}#loadlog .step.warn{color:var(--terra);opacity:1}
 @media(max-width:560px){.card{padding:28px 22px}.head h1{font-size:28px}.row2,.row3{grid-template-columns:1fr}tbody td.c0{max-width:200px}}
@@ -92,6 +98,16 @@ tr.d>td{background:#f9f7f2;padding:12px 16px 16px 34px;text-align:left;white-spa
     <div class="toolbar"><span class="shown" id="shown"></span><span class="spacer"></span><button class="btn-ghost" id="toggleAll">Развернуть все</button><button class="btn-ghost" id="resetF">Сбросить фильтры</button><button class="btn-ghost" id="exportCsv">Экспорт CSV</button></div>
     <div class="tablewrap"><table id="pv"><thead><tr id="pvHead"></tr></thead><tbody id="pvBody"></tbody></table></div>
     <div class="hint" id="method" style="margin-top:12px"></div>
+  </div>
+  <div class="panel" id="chartPanel" style="margin-top:16px">
+    <div class="ch-head">
+      <h3 class="ch-title">Динамика заказов</h3>
+      <div class="ch-sel"><select id="cInt" class="fsel" aria-label="Интеграция"></select><select id="cArt" class="fsel" aria-label="Артикул"></select></div>
+    </div>
+    <div class="ch-sum" id="cSum"></div>
+    <div class="ch-wrap" id="cWrap"><div class="ch-tip hidden" id="cTip"></div></div>
+    <div class="ch-legend"><span><i class="lg-b"></i>Заказы до выхода</span><span><i class="lg-line"></i>База (среднее до выхода)</span><span><i class="lg-x"></i>Доп. заказы</span><span><i class="lg-d"></i>Ниже базы</span><span><i class="lg-a"></i>После окна эффекта</span></div>
+    <div class="hint" id="cNote"></div>
   </div>
 </section>
 
@@ -197,7 +213,10 @@ function computeAll(reg,cnt,cost,today){
       if(src&&src.base[a]!=null){r.base[a]=src.base[a];r.baseFrom[a]=src.id;r.inhFrom=src.id;}
       else{let s=0;for(const d of dayRange(r.bS,r.bE))s+=U(d,a);r.base[a]=s/B;}
     }
-    for(const d of dayRange(r.bS,r.eLast)){let u=0;for(const a of r.arts)u+=U(d,a);r.series.push({d,u,e:d>=r.eS});}
+    // дни для графика: база + эффект + 7 дней после окна (не дальше вчерашнего дня)
+    const yest=addDays(today,-1),aEnd=addDays(r.eE,7),cEnd=aEnd<yest?aEnd:yest;
+    r.chart=[...dayRange(r.bS,cEnd)].map(d=>{const ph=d<r.eS?"b":(d<=r.eE?"e":"a");const by={};for(const a of r.arts){const u=U(d,a);if(u||r.base[a])by[a]={u,k:ph==="e"?cover(d,a):1};}return{d,ph,by};});
+    for(const p of r.chart){if(p.ph==="a")continue;let u=0;for(const a in p.by)u+=p.by[a].u;r.series.push({d:p.d,u,e:p.ph==="e"});}
     if(r.status==="plan"&&!(r.live&&r.missing===0&&r.arts.size))continue;
     let extra=0,fin=0,finKnown=0,baseSum=0;
     for(const a of r.arts){
@@ -371,6 +390,7 @@ function render(){
   $("#periodChip").textContent=`Данные ${fmtDate(mt.from)} → ${fmtDate(mt.to)} · база ${state.baseDays} дн / эффект ${state.effDays} дн`;
   $("#method").innerHTML=`<b>Как считается.</b> База — среднее число заказов в день за ${state.baseDays} дн. до выхода. Доп. заказы — заказы за ${state.effDays} дн. начиная с дня выхода минус база. Отменённые заказы исключены. Если окна эффекта разных интеграций пересекаются по одним артикулам, доп. заказы делятся между ними поровну по дням, а если окно базы попало в эффект более ранней интеграции, база берётся от неё. Финрез = доп. заказы × выкуп × прибыль на штуку, по каждому артикулу. Финрез, чистый итог и ROMI считаются только по интеграциям с ценой и себестоимостью (⚠ — сколько не вошло). У идущих интеграций (окно эффекта ещё не закончилось) цифры предварительные — за прошедшие полные дни, они показаны курсивом и в итоги групп не входят, как и будущие и интеграции без данных. При группировке по артикулам бюджет делится пропорционально заказам артикула в окне эффекта.`;
   saveView();
+  renderChart();
 }
 function syncControls(){
   $("#fGroup").value=V.group;$("#fFrom").value=V.from;$("#fTo").value=V.to;$("#fQ").value===V.q||($("#fQ").value=V.q);$("#fRes").value=V.res;$("#fPlan").checked=V.cur;$("#fBad").checked=V.bad;
@@ -388,12 +408,112 @@ function exportCsv(){
   const blob=new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`integracii_${todayISO()}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
 }
 
+/* ---------- график ---------- */
+let chSel=null,chArt="",chDays=[],chBase=0;
+const PH_T={b:"до выхода",e:"эффект",a:"после окна эффекта"};
+const WD=["вс","пн","вт","ср","чт","пт","сб"];
+function chartCands(){return filtered().filter(r=>r.chart&&r.chart.length&&(r.status==="ok"||(r.status==="plan"&&r.live))).sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:b.id-a.id);}
+function niceStep(v){if(v<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(v)));const f=v/p;return(f<=1?1:f<=2?2:f<=5?5:10)*p;}
+function renderChart(){
+  const C=chartCands();const wrap=$("#cWrap");
+  if(!C.length){$("#cInt").innerHTML="";$("#cArt").classList.add("hidden");$("#cSum").innerHTML="";wrap.innerHTML='<div class="empty">Нет интеграций с данными под выбранные фильтры</div><div class="ch-tip hidden" id="cTip"></div>';$("#cNote").textContent="";chDays=[];return;}
+  const r=C.find(x=>x.id===chSel)||C[0];chSel=r.id;
+  const opts=C.map(x=>`<option value="${x.id}">${fmtDate(x.date)} · ${esc(x.blogger||"—")}${x.status==="plan"?" · идёт":""}</option>`).join("");
+  if($("#cInt").dataset.h!==opts){$("#cInt").innerHTML=opts;$("#cInt").dataset.h=opts;}$("#cInt").value=String(r.id);
+  const arts=Object.keys(r.byArt).length?Object.keys(r.byArt).sort((a,b)=>r.byArt[b].eff-r.byArt[a].eff):[...new Set(r.chart.flatMap(p=>Object.keys(p.by)))];
+  if(chArt&&!arts.includes(chArt))chArt="";
+  $("#cArt").innerHTML=`<option value="">Все артикулы (${arts.length})</option>`+arts.map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join("");$("#cArt").value=chArt;
+  $("#cArt").classList.toggle("hidden",arts.length<2);
+  const sel=chArt?[chArt]:arts;
+  const base=sel.reduce((s,a)=>s+(r.base[a]||0),0);chBase=base;
+  // доп. заказы по дням считаются так же, как в таблице: (заказы − база) / число интеграций, работающих в этот день
+  const days=r.chart.map(p=>{let u=0,x=0,split=false;for(const a of sel){const o=p.by[a];if(!o)continue;u+=o.u;if(p.ph==="e"){x+=(o.u-(r.base[a]||0))/o.k;if(o.k>1)split=true;}}return{d:p.d,ph:p.ph,u,x,split};});
+  chDays=days;
+  // сводка над графиком — те же цифры, что в таблице
+  let share=1;if(chArt){const tot=Object.values(r.byArt).reduce((s,d)=>s+d.eff,0);share=tot>0&&r.byArt[chArt]?r.byArt[chArt].eff/tot:1;}
+  const v=vals({key:"",r,art:chArt||null,share});const effN=days.filter(p=>p.ph==="e").length;
+  const parts=[`<b>${fmtDate(r.date)} · ${esc(r.blogger||"—")}</b>${r.status==="plan"?` <span class="flag live">идёт ${r.elapsed}/${state.effDays} дн</span>`:""}`,
+    `база <b>${d1(base)}</b> зак./день`,
+    `доп. заказы <b class="${cls(v.extra)}">${sint(v.extra)}</b> за ${effN} дн`,
+    `финрез <b>${smoney(v.fin)}</b>`,`бюджет <b>${money(v.budget)}</b>${chArt?' <span class="muted">(доля артикула)</span>':""}`];
+  if(v.net!=null)parts.push(`чистый итог <b class="${cls(v.net)}">${smoney(v.net)}</b> · ROMI <b>${xf(v.romi)}</b>`);
+  $("#cSum").innerHTML=parts.join(" · ");
+  // заметки под графиком
+  const notes=[];const aft=days.filter(p=>p.ph==="a");
+  if(aft.length){const avg=aft.reduce((s,p)=>s+p.u,0)/aft.length;notes.push(`После окна эффекта (${aft.length} дн.) в среднем <b>${d1(avg)}</b> заказа в день${base>0?` — ${Math.round(avg/base*100)}% от базы`:""}. На доп. заказы и финрез эти дни не влияют.`);}
+  else if(r.status==="ok")notes.push("Дни после окна эффекта ещё не наступили.");
+  if(days.some(p=>p.split))notes.push("* В отмеченные дни эффект поделён с другой интеграцией по тем же артикулам — над столбиком показана доля этой интеграции.");
+  if(r.inhFrom!=null)notes.push(`База взята от интеграции ${fmtDate(byId(r.inhFrom).date)} · ${esc(byId(r.inhFrom).blogger||"—")}, потому что окно базы попало в её всплеск.`);
+  $("#cNote").innerHTML=notes.join(" ");
+  drawChart(wrap,days,base);
+}
+function drawChart(wrap,days,base){
+  const W=Math.max(300,wrap.clientWidth||800),narrow=W<560,H=narrow?250:320;
+  const L=narrow?34:42,R=10,T=34,B=narrow?42:38,ph=H-T-B;
+  const n=days.length,slot=(W-L-R)/n,bw=Math.min(slot*0.68,48);
+  const maxU=Math.max(base,...days.map(p=>p.u),1);const step=niceStep(maxU*1.15/4);const top=Math.ceil(maxU*1.15/step)*step;
+  const y=v=>T+(1-v/top)*ph;const cx=i=>L+slot*(i+.5);
+  const f=v=>nf.format(Math.round(v));
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Заказы по дням"><defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#f7e3dc"/><rect width="3" height="6" fill="#e9b8a9"/></pattern></defs>`;
+  // фоны фаз и подписи сверху
+  const range=ph0=>{const ix=days.map((p,i)=>p.ph===ph0?i:-1).filter(i=>i>=0);return ix.length?[ix[0],ix[ix.length-1]]:null;};
+  const bands=[["b","До выхода",null],["e","Эффект","#edf3ea"],["a","После","#f5f1ea"]];
+  for(const[k,t,fill]of bands){const rg=range(k);if(!rg)continue;const x0=L+slot*rg[0],x1=L+slot*(rg[1]+1);
+    if(fill)s+=`<rect x="${x0}" y="${T-8}" width="${x1-x0}" height="${ph+8}" fill="${fill}" rx="6"/>`;
+    if(x1-x0>=34)s+=`<text x="${(x0+x1)/2}" y="${T-14}" text-anchor="middle" font-size="11" font-weight="700" fill="#8c8275" letter-spacing=".04em">${t.toUpperCase()}</text>`;}
+  // сетка
+  for(let v=0;v<=top+1e-9;v+=step){s+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="${v===0?"#cfc5b4":"#ece6da"}" stroke-width="1"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="10.5" fill="#8c8275">${f(v)}</text>`;}
+  // столбики
+  days.forEach((p,i)=>{const x0=cx(i)-bw/2,yb=y(base),yu=y(p.u),y0=y(0);
+    if(p.ph==="b")s+=`<rect x="${x0}" y="${yu}" width="${bw}" height="${y0-yu}" fill="#c9bfae" rx="3"/>`;
+    else if(p.ph==="a")s+=`<rect x="${x0+.5}" y="${yu}" width="${bw-1}" height="${y0-yu}" fill="#ece6da" stroke="#c9bfae" rx="3"/>`;
+    else if(p.u>=base){
+      s+=`<rect x="${x0}" y="${yb}" width="${bw}" height="${y0-yb}" fill="#c9bfae" rx="3"/>`;
+      if(p.u>base)s+=`<rect x="${x0}" y="${yu}" width="${bw}" height="${yb-yu}" fill="#5c8f5f" rx="3"/>`;
+    }else{
+      s+=`<rect x="${x0}" y="${yu}" width="${bw}" height="${y0-yu}" fill="#c9bfae" rx="3"/><rect x="${x0+.5}" y="${yb}" width="${bw-1}" height="${yu-yb}" fill="url(#hatch)" stroke="#b8553f" stroke-width="1" rx="3"/>`;
+    }
+    if(p.ph==="e"&&Math.round(p.x)!==0&&slot>=22){const yl=Math.min(yu,yb)-6;s+=`<text x="${cx(i)}" y="${yl}" text-anchor="middle" font-size="${narrow?10.5:12}" font-weight="800" fill="${p.x>0?"#3f6f43":"#a8452e"}" paint-order="stroke" stroke="#fdfbf6" stroke-width="3">${sint(p.x)}${p.split?"*":""}</text>`;}
+  });
+  // линия базы
+  const yb=y(base);s+=`<line x1="${L}" x2="${W-R}" y1="${yb}" y2="${yb}" stroke="#c47150" stroke-width="2" stroke-dasharray="6 4"/>`;
+  s+=`<text x="${W-R-4}" y="${yb-6}" text-anchor="end" font-size="11" font-weight="700" fill="#b0603f" paint-order="stroke" stroke="#fdfbf6" stroke-width="3">база ${d1(base)}/день</text>`;
+  // подписи дат
+  // на узком экране — только число дня, месяц один раз под первым днём и при смене месяца
+  const short=slot<36,every=slot<15?2:1;
+  days.forEach((p,i)=>{if(i%every)return;const dd=fmtDate(p.d).slice(0,5);const fill=p.ph==="e"?"#2c2722":"#8c8275",fw=p.ph==="e"?700:500;
+    s+=`<text x="${cx(i)}" y="${H-B+16}" text-anchor="middle" font-size="${narrow?10:11}" fill="${fill}" font-weight="${fw}">${short?dd.slice(0,2):dd}</text>`;
+    if(short&&(i===0||p.d.slice(5,7)!==days[i-1].d.slice(5,7)))s+=`<text x="${cx(i)}" y="${H-B+29}" text-anchor="middle" font-size="9.5" fill="#8c8275">${MONTHS[+p.d.slice(5,7)-1]}</text>`;});
+  // зоны наведения
+  days.forEach((p,i)=>{s+=`<rect class="hit" data-i="${i}" x="${L+slot*i}" y="${T-8}" width="${slot}" height="${ph+B}" fill="transparent"/>`;});
+  s+=`</svg><div class="ch-tip hidden" id="cTip"></div>`;
+  wrap.innerHTML=s;
+}
+function chartTip(e){
+  const tip=$("#cTip");if(!tip)return;const h=e.target.closest&&e.target.closest(".hit");
+  if(!h){tip.classList.add("hidden");return;}
+  const p=chDays[+h.dataset.i];if(!p)return;
+  const wd=WD[new Date(p.d+"T00:00:00Z").getUTCDay()];
+  let t=`<b>${fmtDate(p.d)}</b>, ${wd} · ${PH_T[p.ph]}<br>Заказов: <b>${nf.format(p.u)}</b><br>База: ${d1(chBase)}`;
+  if(p.ph==="e")t+=`<br>Доп. заказы: <b>${sint(p.x)}</b>${p.split?" (доля этой интеграции)":""}`;
+  else t+=`<br>К базе: ${sint(p.u-chBase)}`;
+  tip.innerHTML=t;tip.classList.remove("hidden");
+  const wr=$("#cWrap").getBoundingClientRect();const hr=h.getBoundingClientRect();
+  let x=hr.left-wr.left+hr.width/2-tip.offsetWidth/2;x=Math.max(0,Math.min(x,wr.width-tip.offsetWidth));
+  tip.style.left=x+"px";tip.style.top=Math.max(0,e.clientY-wr.top-tip.offsetHeight-14)+"px";
+}
+$("#cWrap").addEventListener("mousemove",chartTip);$("#cWrap").addEventListener("click",chartTip);
+$("#cWrap").addEventListener("mouseleave",()=>{const t=$("#cTip");if(t)t.classList.add("hidden");});
+$("#cInt").addEventListener("change",e=>{chSel=+e.target.value;chArt="";renderChart();});
+$("#cArt").addEventListener("change",e=>{chArt=e.target.value;renderChart();});
+let rzT=null,rzW=0;window.addEventListener("resize",()=>{clearTimeout(rzT);rzT=setTimeout(()=>{const w=$("#cWrap").clientWidth;if(w!==rzW&&state.computed&&!$("#dash").classList.contains("hidden")){rzW=w;renderChart();}},150);});
+
 /* ---------- события ---------- */
 document.addEventListener("click",e=>{
   const ch=e.target.closest(".chip");if(ch){const t=todayISO();const p=ch.dataset.p;V.from=p==="all"?"":p==="year"?t.slice(0,4)+"-01-01":addDays(t,-(+p));V.to="";render();return;}
   const th=e.target.closest("#pvHead th");if(th){const k=th.dataset.k;if(V.sk===k)V.sd*=-1;else{V.sk=k;V.sd=k==="name"?1:-1;}render();return;}
   const g=e.target.closest("tr.g");if(g){const k=g.dataset.g;openG.has(k)?openG.delete(k):openG.add(k);render();return;}
-  const i=e.target.closest("tr.i");if(i){const k=i.dataset.i+"|"+i.dataset.a;openI.has(k)?openI.delete(k):openI.add(k);render();return;}
+  const i=e.target.closest("tr.i");if(i){const k=i.dataset.i+"|"+i.dataset.a;openI.has(k)?openI.delete(k):openI.add(k);chSel=+i.dataset.i;chArt=i.dataset.a||"";render();return;}
 });
 $("#fGroup").addEventListener("change",e=>{V.group=e.target.value;openG.clear();openI.clear();if(V.group==="month"){V.sk="name";V.sd=-1;}render();});
 $("#fFrom").addEventListener("change",e=>{V.from=e.target.value;render();});
